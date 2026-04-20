@@ -20,8 +20,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "pd-markdown": "workspace:*",
-    "pd-markdown-ui": "workspace:*",
     "@codemirror/autocomplete": "^6.18.0",
     "@codemirror/commands": "^6.7.0",
     "@codemirror/lang-markdown": "^6.3.0",

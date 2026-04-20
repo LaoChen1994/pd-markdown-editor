@@ -2,7 +2,7 @@ import { EditorView } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import type { Extension } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
-import { MarkdownRenderer } from "pd-markdown";
+
 import type { MarkdownEditorOptions, EditorCommand, MarkdownEditorInstance, EditorPlugin } from "./types";
 import { createDefaultExtensions } from "./extensions/default";
 import { createLightTheme, createDarkTheme } from "./themes";
@@ -29,7 +29,7 @@ import { PluginManager } from "./plugins";
  */
 export class MarkdownEditor implements MarkdownEditorInstance {
   private view: EditorView;
-  private renderer: MarkdownRenderer;
+
   private pluginManager: PluginManager;
   private wrapperEl: HTMLElement;
   private toolbarEl: HTMLElement | null = null;
@@ -50,14 +50,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       extensions: userExtensions = [],
       plugins = [],
       toolbar = true,
-      preview,
     } = options;
 
     this.currentTheme = theme;
     this.onChange = onChange;
-    this.renderer = preview && typeof preview === "object" && preview.renderer
-      ? preview.renderer
-      : new MarkdownRenderer();
 
     // Plugin manager
     this.pluginManager = new PluginManager();
@@ -154,9 +150,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     executeEditorCommand(this.view, command as EditorCommand);
   }
 
-  getPreviewHTML(): string {
-    return this.renderer.render(this.getValue());
-  }
+
 
   setTheme(theme: "light" | "dark"): void {
     if (theme === this.currentTheme) return;

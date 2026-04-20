@@ -21,7 +21,6 @@ export interface UseMarkdownEditorReturn {
   getValue: () => string;
   setValue: (value: string) => void;
   executeCommand: (command: EditorCommand | string) => void;
-  getPreviewHTML: () => string;
   focus: () => void;
 }
 
@@ -59,8 +58,7 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
   const getValue = () => editorRef.value?.getValue() ?? "";
   const setValue = (v: string) => editorRef.value?.setValue(v);
   const executeCommand = (cmd: EditorCommand | string) => editorRef.value?.executeCommand(cmd);
-  const getPreviewHTML = () => editorRef.value?.getPreviewHTML() ?? "";
   const focus = () => editorRef.value?.focus();
 
-  return { containerRef, editorRef, getValue, setValue, executeCommand, getPreviewHTML, focus };
+  return { containerRef, editorRef, getValue, setValue, executeCommand, focus };
 }

@@ -1,20 +1,39 @@
-import { MarkdownRenderer } from "pd-markdown";
-import type { TocItem } from "pd-markdown";
 import type { EditorPlugin } from "../types";
+
+export interface TocItem {
+  id: string;
+  text: string;
+  level: number;
+}
 
 export interface TocPluginOptions {
   /** Container element for TOC, auto-created if not provided */
   container?: HTMLElement;
   /** Max heading level, default 3 */
   maxLevel?: number;
-  /** Highlight active heading, default true */
-  highlightActive?: boolean;
+}
+
+function extractToc(markdown: string): TocItem[] {
+  const toc: TocItem[] = [];
+  const regex = /^(#{1,6})\s+(.+)$/gm;
+  let match;
+  while ((match = regex.exec(markdown)) !== null) {
+    const level = match[1].length;
+    const text = match[2].trim();
+    const id = text
+      .toLowerCase()
+      .replace(/[\s]+/g, "-")
+      .replace(/[^\w\u4e00-\u9fff-]/g, "")
+      .replace(/--+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    toc.push({ level, text, id });
+  }
+  return toc;
 }
 
 export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
   const { maxLevel = 3 } = options;
   let tocContainer: HTMLElement | null = options.container ?? null;
-  let renderer: MarkdownRenderer | null = null;
 
   function renderToc(items: TocItem[]): void {
     if (!tocContainer) return;
@@ -33,20 +52,17 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
     name: "toc",
 
     install(editor) {
-      renderer = new MarkdownRenderer();
       if (!tocContainer) {
         tocContainer = document.createElement("div");
         tocContainer.className = "pd-editor-toc";
         Object.assign(tocContainer.style, { width: "200px", flexShrink: "0", padding: "16px", overflow: "auto", borderLeft: "1px solid #d1d9e0" });
       }
-      // Initial render
-      const toc = renderer.extractToc(editor.getValue());
+      const toc = extractToc(editor.getValue());
       renderToc(toc);
     },
 
     onUpdate({ value }) {
-      if (!renderer) return;
-      const toc = renderer.extractToc(value);
+      const toc = extractToc(value);
       renderToc(toc);
     },
 
@@ -55,7 +71,6 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
         tocContainer.remove();
       }
       tocContainer = null;
-      renderer = null;
     },
   };
 }

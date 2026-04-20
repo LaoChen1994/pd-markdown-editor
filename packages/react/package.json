@@ -13,17 +13,19 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@codemirror/state": "^6.5.0",
     "pd-editor-core": "workspace:*",
-    "pd-markdown": "workspace:*",
-    "pd-markdown-ui": "workspace:*",
-    "@codemirror/state": "^6.5.0"
+    "pd-markdown": "^2.1.1",
+    "pd-markdown-ui": "^1.0.5"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

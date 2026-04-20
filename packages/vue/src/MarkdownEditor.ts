@@ -1,6 +1,6 @@
 import { defineComponent, ref, onMounted, onUnmounted, watch, h, computed } from "vue";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
-import { MarkdownRenderer } from "pd-markdown";
+import MarkdownIt from "markdown-it";
 import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
 import type { PropType } from "vue";
 
@@ -22,7 +22,7 @@ export const MarkdownEditor = defineComponent({
   setup(props, { emit }) {
     const editorContainerRef = ref<HTMLDivElement | null>(null);
     const editorRef = ref<CoreEditor | null>(null);
-    const renderer = new MarkdownRenderer();
+    const renderer = new MarkdownIt({ html: true, breaks: true, linkify: true });
     const previewHtml = ref("");
 
     const isControlled = computed(() => props.modelValue !== undefined);

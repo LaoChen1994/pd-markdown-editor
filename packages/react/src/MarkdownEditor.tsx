@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
-import { MarkdownRenderer } from "pd-markdown";
-
+import { MarkdownRenderer } from "pd-markdown/web";
 import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
 
 export interface MarkdownEditorProps {
@@ -61,9 +60,8 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CoreEditor | null>(null);
 
-  const rendererRef = useRef<MarkdownRenderer>(new MarkdownRenderer());
   const isControlled = value !== undefined;
-  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewContent, setPreviewContent] = useState("");
 
   // Initialize editor
   useEffect(() => {
@@ -77,7 +75,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       onChange: (v) => {
         onChange?.(v);
         if (preview === "split") {
-          setPreviewHtml(rendererRef.current.render(v));
+          setPreviewContent(v);
         }
       },
       onSave,
@@ -93,7 +91,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
     // Initial preview
     if (preview === "split") {
       const initVal = isControlled ? (value ?? "") : defaultValue;
-      setPreviewHtml(rendererRef.current.render(initVal));
+      setPreviewContent(initVal);
     }
 
     return () => {
@@ -117,7 +115,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   useEffect(() => {
     if (preview === "preview") {
       const content = isControlled ? (value ?? "") : defaultValue;
-      setPreviewHtml(rendererRef.current.render(content));
+      setPreviewContent(content);
     }
   }, [preview, value, defaultValue, isControlled]);
 
@@ -158,8 +156,9 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
             padding: "24px",
             borderLeft: preview === "split" ? `1px solid ${theme === "dark" ? "#30363d" : "#d1d9e0"}` : "none",
           }}
-          dangerouslySetInnerHTML={{ __html: previewHtml }}
-        />
+        >
+          <MarkdownRenderer source={previewContent} />
+        </div>
       )}
     </div>
   );
