@@ -1,0 +1,203 @@
+/* ===================================================
+   pd-markdown-ui — Markdown Content Styles
+   GitHub-inspired typography with modern enhancements
+   =================================================== */
+
+.pd-md-preview {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.7;
+  word-wrap: break-word;
+  color: var(--pd-md-text, #1f2328);
+  padding: 24px;
+}
+
+/* Headings */
+.pd-md-preview h1,
+.pd-md-preview h2,
+.pd-md-preview h3,
+.pd-md-preview h4,
+.pd-md-preview h5,
+.pd-md-preview h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--pd-md-heading, #1f2328);
+}
+
+.pd-md-preview h1 {
+  font-size: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--pd-md-border, #d1d9e0);
+}
+
+.pd-md-preview h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--pd-md-border, #d1d9e0);
+}
+
+.pd-md-preview h3 {
+  font-size: 1.25em;
+}
+
+.pd-md-preview h4 {
+  font-size: 1em;
+}
+
+.pd-md-preview h5 {
+  font-size: 0.875em;
+}
+
+.pd-md-preview h6 {
+  font-size: 0.85em;
+  color: var(--pd-md-text-secondary, #656d76);
+}
+
+/* Paragraphs & Text */
+.pd-md-preview p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.pd-md-preview a {
+  color: var(--pd-md-link, #0969da);
+  text-decoration: none;
+}
+
+.pd-md-preview a:hover {
+  text-decoration: underline;
+}
+
+.pd-md-preview strong {
+  font-weight: 600;
+}
+
+.pd-md-preview em {
+  font-style: italic;
+}
+
+.pd-md-preview del {
+  text-decoration: line-through;
+  color: var(--pd-md-text-secondary, #656d76);
+}
+
+/* Blockquotes */
+.pd-md-preview blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: var(--pd-md-text-secondary, #656d76);
+  border-left: 0.25em solid var(--pd-md-border, #d1d9e0);
+}
+
+.pd-md-preview blockquote > :first-child {
+  margin-top: 0;
+}
+
+.pd-md-preview blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.pd-md-preview ul,
+.pd-md-preview ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 2em;
+}
+
+.pd-md-preview li {
+  margin-top: 4px;
+}
+
+.pd-md-preview li + li {
+  margin-top: 4px;
+}
+
+/* Task lists */
+.pd-md-preview .pd-md-task-item {
+  list-style: none;
+  margin-left: -1.5em;
+}
+
+.pd-md-preview .pd-md-task-checkbox {
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+/* Inline code */
+.pd-md-preview code {
+  font-family: "SF Mono", "Fira Code", "Fira Mono", Menlo, Consolas, monospace;
+  font-size: 85%;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  background-color: var(--pd-md-code-bg, rgba(175, 184, 193, 0.2));
+  border-radius: 6px;
+}
+
+/* Code blocks */
+.pd-md-preview pre {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: var(--pd-md-code-block-bg, #f6f8fa);
+  border-radius: 6px;
+}
+
+.pd-md-preview pre code {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border: 0;
+  font-size: 100%;
+}
+
+/* Tables */
+.pd-md-preview table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow: auto;
+  margin-top: 0;
+  margin-bottom: 16px;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.pd-md-preview table th {
+  font-weight: 600;
+  padding: 6px 13px;
+  border: 1px solid var(--pd-md-border, #d1d9e0);
+  background-color: var(--pd-md-table-header-bg, #f6f8fa);
+}
+
+.pd-md-preview table td {
+  padding: 6px 13px;
+  border: 1px solid var(--pd-md-border, #d1d9e0);
+}
+
+.pd-md-preview table tr:nth-child(2n) {
+  background-color: var(--pd-md-table-row-alt-bg, #f6f8fa);
+}
+
+/* Horizontal rule */
+.pd-md-preview hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--pd-md-border, #d1d9e0);
+  border: 0;
+  border-radius: 2px;
+}
+
+/* Images */
+.pd-md-preview img {
+  max-width: 100%;
+  box-sizing: content-box;
+  border-radius: 6px;
+}

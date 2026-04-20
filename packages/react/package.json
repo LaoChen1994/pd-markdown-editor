@@ -1,0 +1,41 @@
+{
+  "name": "pd-editor-react",
+  "version": "0.1.0",
+  "description": "React adapter for pd-editor-core Markdown editor",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "pd-editor-core": "workspace:*",
+    "pd-markdown": "workspace:*",
+    "pd-markdown-ui": "workspace:*",
+    "@codemirror/state": "^6.5.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
+  },
+  "license": "MIT"
+}

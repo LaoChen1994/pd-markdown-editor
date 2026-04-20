@@ -1,0 +1,15 @@
+/* pd-markdown-ui — Light Theme Variables */
+.pd-md-theme-light {
+  --pd-md-text: #1f2328;
+  --pd-md-text-secondary: #656d76;
+  --pd-md-heading: #1f2328;
+  --pd-md-link: #0969da;
+  --pd-md-border: #d1d9e0;
+  --pd-md-code-bg: rgba(175, 184, 193, 0.2);
+  --pd-md-code-block-bg: #f6f8fa;
+  --pd-md-table-header-bg: #f6f8fa;
+  --pd-md-table-row-alt-bg: #f6f8fa;
+  --pd-md-bg: #ffffff;
+  --pd-md-toc-hover-bg: rgba(0, 0, 0, 0.04);
+  --pd-md-toc-active-bg: rgba(9, 105, 218, 0.08);
+}

@@ -1,0 +1,88 @@
+/* ===================================================
+   pd-markdown-ui — highlight.js Code Styles (Light)
+   =================================================== */
+
+.pd-md-preview .hljs {
+  color: #24292e;
+  background: #f6f8fa;
+}
+
+.pd-md-preview .hljs-comment,
+.pd-md-preview .hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.pd-md-preview .hljs-keyword,
+.pd-md-preview .hljs-selector-tag,
+.pd-md-preview .hljs-subst {
+  color: #d73a49;
+}
+
+.pd-md-preview .hljs-number,
+.pd-md-preview .hljs-literal,
+.pd-md-preview .hljs-variable,
+.pd-md-preview .hljs-template-variable,
+.pd-md-preview .hljs-tag .hljs-attr {
+  color: #005cc5;
+}
+
+.pd-md-preview .hljs-string,
+.pd-md-preview .hljs-doctag {
+  color: #032f62;
+}
+
+.pd-md-preview .hljs-title,
+.pd-md-preview .hljs-section,
+.pd-md-preview .hljs-selector-id {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.pd-md-preview .hljs-type,
+.pd-md-preview .hljs-class .hljs-title {
+  color: #6f42c1;
+}
+
+.pd-md-preview .hljs-tag,
+.pd-md-preview .hljs-name,
+.pd-md-preview .hljs-attribute {
+  color: #22863a;
+}
+
+.pd-md-preview .hljs-regexp,
+.pd-md-preview .hljs-link {
+  color: #032f62;
+}
+
+.pd-md-preview .hljs-symbol,
+.pd-md-preview .hljs-bullet {
+  color: #e36209;
+}
+
+.pd-md-preview .hljs-built_in,
+.pd-md-preview .hljs-builtin-name {
+  color: #005cc5;
+}
+
+.pd-md-preview .hljs-meta {
+  color: #735c0f;
+}
+
+.pd-md-preview .hljs-deletion {
+  background: #ffeef0;
+  color: #b31d28;
+}
+
+.pd-md-preview .hljs-addition {
+  background: #f0fff4;
+  color: #22863a;
+}
+
+.pd-md-preview .hljs-emphasis {
+  font-style: italic;
+}
+
+.pd-md-preview .hljs-strong {
+  font-weight: bold;
+}
