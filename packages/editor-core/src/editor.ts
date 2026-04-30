@@ -1,6 +1,7 @@
 import { EditorView } from "@codemirror/view";
 import { Compartment, EditorState } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
+import type { Extension } from "@codemirror/state";
 import type { MarkdownEditorOptions, EditorCommand, MarkdownEditorInstance, EditorPlugin } from "./types";
 import { createDefaultExtensions } from "./extensions/default";
 import { createLightTheme, createDarkTheme } from "./themes";
@@ -31,7 +32,9 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private wrapperEl: HTMLElement;
   private toolbarEl: HTMLElement | null = null;
   private themeCompartment = new Compartment();
+  private readOnlyCompartment = new Compartment();
   private currentTheme: "light" | "dark";
+  private currentReadOnly: boolean;
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
   private initialValue: string;
@@ -51,6 +54,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     } = options;
 
     this.currentTheme = theme;
+    this.currentReadOnly = readOnly;
     this.onChange = onChange;
     this.initialValue = initialValue;
 
@@ -93,7 +97,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     parent.appendChild(this.wrapperEl);
 
     // Build extensions
-    const defaultExts = createDefaultExtensions({ placeholder, readOnly });
+    const defaultExts = createDefaultExtensions({ placeholder });
     const themeExt = theme === "dark" ? createDarkTheme() : createLightTheme();
     const pluginExts = this.pluginManager.installAll(this);
 
@@ -121,6 +125,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
         extensions: [
           ...defaultExts,
           this.themeCompartment.of(themeExt),
+          this.readOnlyCompartment.of(this.createReadOnlyExtension(readOnly)),
           ...pluginExts,
           saveKeymap,
           updateListener,
@@ -158,6 +163,15 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     if (!this.view) return;
     this.view.dispatch({
       effects: this.themeCompartment.reconfigure(theme === "dark" ? createDarkTheme() : createLightTheme()),
+    });
+  }
+
+  setReadOnly(readOnly: boolean): void {
+    if (readOnly === this.currentReadOnly) return;
+    this.currentReadOnly = readOnly;
+    if (!this.view) return;
+    this.view.dispatch({
+      effects: this.readOnlyCompartment.reconfigure(this.createReadOnlyExtension(readOnly)),
     });
   }
 
@@ -204,5 +218,12 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     this.pluginManager.destroyAll();
     this.view?.destroy();
     this.wrapperEl.remove();
+  }
+
+  private createReadOnlyExtension(readOnly: boolean): Extension[] {
+    return [
+      EditorState.readOnly.of(readOnly),
+      EditorView.editable.of(!readOnly),
+    ];
   }
 }

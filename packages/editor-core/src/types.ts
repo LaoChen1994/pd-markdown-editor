@@ -50,6 +50,7 @@ export interface MarkdownEditorInstance {
   setValue(value: string): void;
   focus(): void;
   executeCommand(command: EditorCommand | string): void;
+  setReadOnly(readOnly: boolean): void;
   replaceSelection(text: string): void;
   wrapSelection(before: string, after: string): void;
   getSelection(): string;

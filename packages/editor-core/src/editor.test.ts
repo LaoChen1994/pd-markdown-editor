@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { EditorState } from "@codemirror/state";
 import { MarkdownEditor } from "./editor";
 import type { EditorPlugin } from "./types";
 
@@ -56,6 +57,28 @@ describe("MarkdownEditor", () => {
 
     expect(installedValue).toBe("# Initial");
     expect(editor.getValue()).toBe("# Initial");
+
+    editor.destroy();
+  });
+
+  it("updates read-only mode without recreating the editor view", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "locked",
+      toolbar: false,
+    });
+    const view = editor.getEditorView();
+
+    editor.setReadOnly(true);
+
+    expect(editor.getEditorView()).toBe(view);
+    expect(view.state.facet(EditorState.readOnly)).toBe(true);
+
+    editor.setReadOnly(false);
+
+    expect(editor.getEditorView()).toBe(view);
+    expect(view.state.facet(EditorState.readOnly)).toBe(false);
 
     editor.destroy();
   });

@@ -1,4 +1,4 @@
-import { defineComponent, ref, onMounted, onUnmounted, watch, computed } from "vue";
+import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
 import { components as mdUiComponents } from "pd-markdown-ui/vue";
@@ -268,6 +268,7 @@ export const MarkdownEditor = defineComponent({
     const editorContainerRef = ref<HTMLDivElement | null>(null);
     const editorRef = ref<CoreEditor | null>(null);
     const previewAst = ref<AstNode | null>(null);
+    const latestValue = ref(props.modelValue ?? props.defaultValue);
 
     const parser = createParser();
 
@@ -290,10 +291,11 @@ export const MarkdownEditor = defineComponent({
       }
     }
 
-    onMounted(() => {
+    const mountEditor = () => {
+      if (editorRef.value) return;
       if (!editorContainerRef.value || props.preview === "preview") {
         if (props.preview === "preview") {
-          const content = isControlled.value ? (props.modelValue ?? "") : props.defaultValue;
+          const content = isControlled.value ? (props.modelValue ?? "") : latestValue.value;
           updatePreview(content);
         }
         return;
@@ -301,9 +303,10 @@ export const MarkdownEditor = defineComponent({
 
       const editor = new CoreEditor({
         parent: editorContainerRef.value,
-        initialValue: isControlled.value ? (props.modelValue ?? "") : props.defaultValue,
+        initialValue: isControlled.value ? (props.modelValue ?? "") : latestValue.value,
         theme: props.theme,
         onChange: (v: string) => {
+          latestValue.value = v;
           emit("update:modelValue", v);
           if (props.preview === "split") {
             updatePreview(v);
@@ -320,9 +323,13 @@ export const MarkdownEditor = defineComponent({
       editorRef.value = editor;
 
       if (props.preview === "split") {
-        const initVal = isControlled.value ? (props.modelValue ?? "") : props.defaultValue;
+        const initVal = isControlled.value ? (props.modelValue ?? "") : latestValue.value;
         updatePreview(initVal);
       }
+    };
+
+    onMounted(() => {
+      mountEditor();
     });
 
     // Sync controlled value
@@ -332,9 +339,30 @@ export const MarkdownEditor = defineComponent({
         if (current !== newVal) {
           editorRef.value.setValue(newVal ?? "");
         }
+        latestValue.value = newVal ?? "";
       }
       if (props.preview === "preview") {
         updatePreview(newVal ?? "");
+      }
+    });
+
+    watch(() => props.theme, (theme) => {
+      editorRef.value?.setTheme(theme);
+    });
+
+    watch(() => props.readOnly, (readOnly) => {
+      editorRef.value?.setReadOnly(readOnly);
+    });
+
+    watch(() => props.preview, async (preview) => {
+      if (preview === "preview") {
+        updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
+        return;
+      }
+      await nextTick();
+      mountEditor();
+      if (preview === "split") {
+        updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
       }
     });
 

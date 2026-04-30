@@ -42,5 +42,61 @@ describe("editor commands", () => {
     expect(view.state.doc.toString()).toBe("## title");
     view.destroy();
   });
-});
 
+  it("toggles an existing heading prefix", () => {
+    const view = createView("## title", 3, 8);
+
+    executeEditorCommand(view, "heading2");
+
+    expect(view.state.doc.toString()).toBe("title");
+    view.destroy();
+  });
+
+  it("switches heading levels instead of removing different heading levels", () => {
+    const view = createView("# title", 0);
+
+    executeEditorCommand(view, "heading2");
+
+    expect(view.state.doc.toString()).toBe("## title");
+    view.destroy();
+  });
+
+  it("prefixes and toggles multiple selected lines", () => {
+    const view = createView("one\ntwo", 0, 7);
+
+    executeEditorCommand(view, "unorderedList");
+    expect(view.state.doc.toString()).toBe("- one\n- two");
+
+    executeEditorCommand(view, "unorderedList");
+    expect(view.state.doc.toString()).toBe("one\ntwo");
+    view.destroy();
+  });
+
+  it("converts existing list markers when applying task lists", () => {
+    const view = createView("- one\n- two", 0, 11);
+
+    executeEditorCommand(view, "taskList");
+
+    expect(view.state.doc.toString()).toBe("- [ ] one\n- [ ] two");
+    view.destroy();
+  });
+
+  it("uses selected text as link label and selects the URL placeholder", () => {
+    const view = createView("docs", 0, 4);
+
+    executeEditorCommand(view, "link");
+
+    expect(view.state.doc.toString()).toBe("[docs](url)");
+    expect(view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to)).toBe("url");
+    view.destroy();
+  });
+
+  it("wraps selected text in a fenced code block", () => {
+    const view = createView("const value = 1;", 0, 16);
+
+    executeEditorCommand(view, "codeBlock");
+
+    expect(view.state.doc.toString()).toBe("\n```\nconst value = 1;\n```\n");
+    view.destroy();
+  });
+});

@@ -22,10 +22,137 @@ const PREFIX_COMMANDS: Record<string, string> = {
 
 const INSERT_COMMANDS: Record<string, string> = {
   horizontalRule: "\n---\n",
-  link: "[link text](url)",
-  image: "![alt text](url)",
-  codeBlock: "\n```\n\n```\n",
   table: "\n| Header | Header |\n|--------|--------|\n| Cell   | Cell   |\n",
+};
+
+const getSelectedLineRange = (view: EditorView) => {
+  const { from, to } = view.state.selection.main;
+  const end = to > from ? to - 1 : to;
+  return {
+    from,
+    to,
+    startLine: view.state.doc.lineAt(from),
+    endLine: view.state.doc.lineAt(end),
+  };
+};
+
+const splitLines = (text: string): string[] => text.split("\n");
+
+const lineHasText = (line: string): boolean => line.trim().length > 0;
+
+const activePrefixPattern = (command: EditorCommand | string): RegExp | null => {
+  if (command === "heading1") return /^(\s*)#\s+/;
+  if (command === "heading2") return /^(\s*)##\s+/;
+  if (command === "heading3") return /^(\s*)###\s+/;
+  if (command === "unorderedList") return /^(\s*)[-*+]\s+/;
+  if (command === "orderedList") return /^(\s*)\d+\.\s+/;
+  if (command === "taskList") return /^(\s*)[-*+]\s+\[[ xX]\]\s+/;
+  if (command === "quote") return /^(\s*)>\s?/;
+  return null;
+};
+
+const cleanupPrefixPattern = (command: EditorCommand | string): RegExp | null => {
+  if (command === "heading1" || command === "heading2" || command === "heading3") return /^(\s*)#{1,6}\s+/;
+  if (command === "unorderedList" || command === "orderedList" || command === "taskList") {
+    return /^(\s*)(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+)/;
+  }
+  if (command === "quote") return /^(\s*)>\s?/;
+  return null;
+};
+
+const withPrefix = (line: string, prefix: string, command: EditorCommand | string): string => {
+  if (!lineHasText(line)) return line;
+  const existingPrefix = cleanupPrefixPattern(command);
+  const withoutExisting = existingPrefix ? line.replace(existingPrefix, "$1") : line;
+  return withoutExisting.replace(/^(\s*)/, `$1${prefix}`);
+};
+
+const withoutPrefix = (line: string, command: EditorCommand | string): string => {
+  const existingPrefix = activePrefixPattern(command);
+  return existingPrefix ? line.replace(existingPrefix, "$1") : line;
+};
+
+const toggleLinePrefix = (view: EditorView, command: EditorCommand | string, prefix: string): boolean => {
+  const { startLine, endLine } = getSelectedLineRange(view);
+  const selectedText = view.state.sliceDoc(startLine.from, endLine.to);
+  const lines = splitLines(selectedText);
+  const contentLines = lines.filter(lineHasText);
+  const existingPrefix = activePrefixPattern(command);
+  const shouldRemove = !!existingPrefix && contentLines.length > 0 && contentLines.every((line) => existingPrefix.test(line));
+  const updated = lines
+    .map((line) => shouldRemove ? withoutPrefix(line, command) : withPrefix(line, prefix, command))
+    .join("\n");
+
+  view.dispatch({
+    changes: { from: startLine.from, to: endLine.to, insert: updated },
+    selection: { anchor: startLine.from, head: startLine.from + updated.length },
+  });
+  view.focus();
+  return true;
+};
+
+const toggleWrap = (view: EditorView, before: string, after: string): boolean => {
+  const { from, to } = view.state.selection.main;
+  const selectedText = view.state.sliceDoc(from, to);
+  const beforeFrom = Math.max(0, from - before.length);
+  const afterTo = Math.min(view.state.doc.length, to + after.length);
+  const hasWrapper =
+    selectedText.length > 0 &&
+    view.state.sliceDoc(beforeFrom, from) === before &&
+    view.state.sliceDoc(to, afterTo) === after;
+
+  if (hasWrapper) {
+    view.dispatch({
+      changes: [
+        { from: to, to: afterTo, insert: "" },
+        { from: beforeFrom, to: from, insert: "" },
+      ],
+      selection: { anchor: beforeFrom, head: to - before.length },
+    });
+    view.focus();
+    return true;
+  }
+
+  const placeholder = "text";
+  const replacement = selectedText ? `${before}${selectedText}${after}` : `${before}${placeholder}${after}`;
+  view.dispatch({
+    changes: { from, to, insert: replacement },
+    selection: selectedText
+      ? { anchor: from + before.length, head: from + before.length + selectedText.length }
+      : { anchor: from + before.length, head: from + before.length + placeholder.length },
+  });
+  view.focus();
+  return true;
+};
+
+const insertLink = (view: EditorView, image = false): boolean => {
+  const { from, to } = view.state.selection.main;
+  const selectedText = view.state.sliceDoc(from, to);
+  const label = selectedText || (image ? "alt text" : "link text");
+  const replacement = image ? `![${label}](url)` : `[${label}](url)`;
+  const urlStart = from + replacement.length - 4;
+
+  view.dispatch({
+    changes: { from, to, insert: replacement },
+    selection: { anchor: urlStart, head: urlStart + 3 },
+  });
+  view.focus();
+  return true;
+};
+
+const insertCodeBlock = (view: EditorView): boolean => {
+  const { from, to } = view.state.selection.main;
+  const selectedText = view.state.sliceDoc(from, to);
+  const body = selectedText || "";
+  const replacement = selectedText ? `\n\`\`\`\n${body}\n\`\`\`\n` : "\n```\n\n```\n";
+  const cursor = selectedText ? from + replacement.length : from + 5;
+
+  view.dispatch({
+    changes: { from, to, insert: replacement },
+    selection: { anchor: cursor },
+  });
+  view.focus();
+  return true;
 };
 
 /**
@@ -38,24 +165,27 @@ export function executeEditorCommand(view: EditorView, command: EditorCommand | 
 
   const state = view.state;
   const { from, to } = state.selection.main;
-  const selectedText = state.sliceDoc(from, to);
-
   // Wrap commands (bold, italic, etc.)
   if (command in WRAP_COMMANDS) {
     const { before, after } = WRAP_COMMANDS[command];
-    const replacement = selectedText ? `${before}${selectedText}${after}` : `${before}text${after}`;
-    view.dispatch({ changes: { from, to, insert: replacement }, selection: { anchor: selectedText ? from + replacement.length : from + before.length, head: selectedText ? from + replacement.length : from + before.length + 4 } });
-    view.focus();
-    return true;
+    return toggleWrap(view, before, after);
   }
 
   // Prefix commands (headings, lists, quotes)
   if (command in PREFIX_COMMANDS) {
-    const prefix = PREFIX_COMMANDS[command];
-    const line = state.doc.lineAt(from);
-    view.dispatch({ changes: { from: line.from, to: line.from, insert: prefix } });
-    view.focus();
-    return true;
+    return toggleLinePrefix(view, command, PREFIX_COMMANDS[command]);
+  }
+
+  if (command === "link") {
+    return insertLink(view);
+  }
+
+  if (command === "image") {
+    return insertLink(view, true);
+  }
+
+  if (command === "codeBlock") {
+    return insertCodeBlock(view);
   }
 
   // Insert commands (hr, link, image, code block, table)

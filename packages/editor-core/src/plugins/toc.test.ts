@@ -8,6 +8,7 @@ function createEditor(value: string): MarkdownEditorInstance {
     setValue: () => undefined,
     focus: () => undefined,
     executeCommand: () => undefined,
+    setReadOnly: () => undefined,
     replaceSelection: () => undefined,
     wrapSelection: () => undefined,
     getSelection: () => "",
@@ -26,4 +27,3 @@ describe("tocPlugin", () => {
     expect(links).toEqual(["#same", "#same-1"]);
   });
 });
-

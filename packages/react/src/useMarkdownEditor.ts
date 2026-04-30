@@ -65,8 +65,17 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       editor.destroy();
       editorRef.current = null;
     };
-    // Only re-create on theme/readOnly change
-  }, [options.theme, options.readOnly]);
+  }, []);
+
+  useEffect(() => {
+    if (options.theme) {
+      editorRef.current?.setTheme(options.theme);
+    }
+  }, [options.theme]);
+
+  useEffect(() => {
+    editorRef.current?.setReadOnly(options.readOnly ?? false);
+  }, [options.readOnly]);
 
   const getValue = useCallback(() => editorRef.current?.getValue() ?? "", []);
   const setValue = useCallback((v: string) => editorRef.current?.setValue(v), []);
