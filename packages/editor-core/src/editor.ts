@@ -1,10 +1,29 @@
 import { EditorView, keymap } from "@codemirror/view";
-import { Compartment, EditorState } from "@codemirror/state";
+import { Compartment, EditorState, Prec } from "@codemirror/state";
 import type { Extension } from "@codemirror/state";
-import type { MarkdownEditorOptions, EditorCommand, MarkdownEditorInstance, EditorPlugin, ToolbarItem } from "./types";
+import type {
+  EditorCommand,
+  EditorCommandState,
+  EditorPlugin,
+  MarkdownEditorInstance,
+  MarkdownEditorOptions,
+  ToolbarItem,
+} from "./types";
 import { createDefaultExtensions } from "./extensions/default";
 import { createLightTheme, createDarkTheme } from "./themes";
-import { executeEditorCommand, wrapSelection, replaceSelection, insertAtCursor, getSelection } from "./commands";
+import {
+  continueMarkdownBlock,
+  canExecuteEditorCommand,
+  executeEditorCommand,
+  getEditorCommandState,
+  getSelection,
+  indentMarkdownBlock,
+  insertAtCursor,
+  isEditorCommandActive,
+  outdentMarkdownBlock,
+  replaceSelection,
+  wrapSelection,
+} from "./commands";
 import { getDefaultToolbarItems, createToolbarElement } from "./toolbar";
 import { PluginManager } from "./plugins";
 
@@ -151,6 +170,21 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     executeEditorCommand(this.view, command as EditorCommand);
   }
 
+  canExecute(command: EditorCommand | string): boolean {
+    if (!this.view) return false;
+    return canExecuteEditorCommand(this.view, command);
+  }
+
+  getCommandState(command: EditorCommand | string): EditorCommandState {
+    if (!this.view) return { active: false, enabled: false };
+    return getEditorCommandState(this.view, command);
+  }
+
+  isActive(command: EditorCommand | string): boolean {
+    if (!this.view) return false;
+    return isEditorCommandActive(this.view, command);
+  }
+
   setTheme(theme: "light" | "dark"): void {
     if (theme === this.currentTheme) return;
     this.currentTheme = theme;
@@ -268,7 +302,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   }
 
   private createMarkdownKeymap(): Extension {
-    return keymap.of([
+    return Prec.high(keymap.of([
+      { key: "Enter", run: continueMarkdownBlock },
+      { key: "Tab", run: indentMarkdownBlock },
+      { key: "Shift-Tab", run: outdentMarkdownBlock },
       { key: "Mod-b", run: (view) => executeEditorCommand(view, "bold") },
       { key: "Mod-i", run: (view) => executeEditorCommand(view, "italic") },
       { key: "Mod-k", run: (view) => executeEditorCommand(view, "link") },
@@ -279,6 +316,6 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       { key: "Mod-Shift-7", run: (view) => executeEditorCommand(view, "orderedList") },
       { key: "Mod-Shift-8", run: (view) => executeEditorCommand(view, "unorderedList") },
       { key: "Mod-Shift-9", run: (view) => executeEditorCommand(view, "quote") },
-    ]);
+    ]));
   }
 }

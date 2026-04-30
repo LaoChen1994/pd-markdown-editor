@@ -84,6 +84,28 @@ describe("MarkdownEditor", () => {
     editor.destroy();
   });
 
+  it("exposes command state for toolbar integrations", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "**hello**",
+      toolbar: false,
+    });
+    const view = editor.getEditorView();
+
+    view.dispatch({ selection: { anchor: 2, head: 7 } });
+
+    expect(editor.isActive("bold")).toBe(true);
+    expect(editor.canExecute("bold")).toBe(true);
+    expect(editor.getCommandState("bold")).toEqual({ active: true, enabled: true });
+
+    editor.setReadOnly(true);
+
+    expect(editor.getCommandState("bold")).toEqual({ active: true, enabled: false });
+
+    editor.destroy();
+  });
+
   it("handles common markdown keyboard shortcuts", () => {
     const parent = document.createElement("div");
     const editor = new MarkdownEditor({
@@ -102,6 +124,40 @@ describe("MarkdownEditor", () => {
 
     expect(handled).toBe(true);
     expect(editor.getValue()).toBe("**hello**");
+
+    editor.destroy();
+  });
+
+  it("handles markdown typing flow shortcuts", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "- one",
+      toolbar: false,
+    });
+    const view = editor.getEditorView();
+
+    view.dispatch({ selection: { anchor: 5 } });
+    expect(runScopeHandlers(
+      view,
+      new KeyboardEvent("keydown", { key: "Enter" }),
+      "editor"
+    )).toBe(true);
+    expect(editor.getValue()).toBe("- one\n- ");
+
+    expect(runScopeHandlers(
+      view,
+      new KeyboardEvent("keydown", { key: "Tab" }),
+      "editor"
+    )).toBe(true);
+    expect(editor.getValue()).toBe("- one\n  - ");
+
+    expect(runScopeHandlers(
+      view,
+      new KeyboardEvent("keydown", { key: "Tab", shiftKey: true }),
+      "editor"
+    )).toBe(true);
+    expect(editor.getValue()).toBe("- one\n- ");
 
     editor.destroy();
   });

@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import { executeEditorCommand, wrapSelection } from "./commands";
+import {
+  canExecuteEditorCommand,
+  continueMarkdownBlock,
+  executeEditorCommand,
+  getEditorCommandState,
+  indentMarkdownBlock,
+  isEditorCommandActive,
+  outdentMarkdownBlock,
+  wrapSelection,
+} from "./commands";
 
 function createView(doc: string, from = 0, to = from): EditorView {
   const parent = document.createElement("div");
@@ -97,6 +106,69 @@ describe("editor commands", () => {
     executeEditorCommand(view, "codeBlock");
 
     expect(view.state.doc.toString()).toBe("\n```\nconst value = 1;\n```\n");
+    view.destroy();
+  });
+
+  it("continues unordered list items on enter", () => {
+    const view = createView("- one", 5);
+
+    expect(continueMarkdownBlock(view)).toBe(true);
+
+    expect(view.state.doc.toString()).toBe("- one\n- ");
+    view.destroy();
+  });
+
+  it("continues ordered lists with the next number", () => {
+    const view = createView("3. one", 6);
+
+    expect(continueMarkdownBlock(view)).toBe(true);
+
+    expect(view.state.doc.toString()).toBe("3. one\n4. ");
+    view.destroy();
+  });
+
+  it("removes an empty list marker on enter", () => {
+    const view = createView("- ", 2);
+
+    expect(continueMarkdownBlock(view)).toBe(true);
+
+    expect(view.state.doc.toString()).toBe("");
+    expect(view.state.selection.main.from).toBe(0);
+    view.destroy();
+  });
+
+  it("indents and outdents selected markdown block lines", () => {
+    const view = createView("- one\n- two", 0, 11);
+
+    expect(indentMarkdownBlock(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe("  - one\n  - two");
+
+    expect(outdentMarkdownBlock(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe("- one\n- two");
+    view.destroy();
+  });
+
+  it("reports active command state for selected markdown", () => {
+    const view = createView("**hello**", 2, 7);
+
+    expect(isEditorCommandActive(view, "bold")).toBe(true);
+    expect(getEditorCommandState(view, "bold")).toEqual({ active: true, enabled: true });
+
+    view.destroy();
+  });
+
+  it("disables command execution in read-only editors", () => {
+    const parent = document.createElement("div");
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: "hello",
+        extensions: [EditorState.readOnly.of(true)],
+      }),
+      parent,
+    });
+
+    expect(canExecuteEditorCommand(view, "bold")).toBe(false);
+
     view.destroy();
   });
 });

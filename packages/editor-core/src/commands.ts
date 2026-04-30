@@ -1,5 +1,6 @@
 import type { EditorView } from "@codemirror/view";
 import { undo, redo } from "@codemirror/commands";
+import { EditorState } from "@codemirror/state";
 import type { EditorCommand } from "./types";
 
 /** Map of editor commands to their markdown syntax transformations */
@@ -154,6 +155,107 @@ const insertCodeBlock = (view: EditorView): boolean => {
   view.focus();
   return true;
 };
+
+const lineSupportsMarkdownIndent = (text: string): boolean =>
+  /^(\s*)(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+|>\s?)/.test(text);
+
+export const continueMarkdownBlock = (view: EditorView): boolean => {
+  const selection = view.state.selection.main;
+  if (!selection.empty) return false;
+
+  const line = view.state.doc.lineAt(selection.from);
+  const beforeCursor = view.state.sliceDoc(line.from, selection.from);
+  const task = beforeCursor.match(/^(\s*)([-*+])\s+\[[ xX]\]\s+(.*)$/);
+  const ordered = beforeCursor.match(/^(\s*)(\d+)\.\s+(.*)$/);
+  const bullet = beforeCursor.match(/^(\s*)([-*+])\s+(.*)$/);
+  const quote = beforeCursor.match(/^(\s*)>\s?(.*)$/);
+  const marker = task
+    ? { indent: task[1], marker: `${task[2]} [ ] `, content: task[3] }
+    : ordered
+      ? { indent: ordered[1], marker: `${Number.parseInt(ordered[2], 10) + 1}. `, content: ordered[3] }
+      : bullet
+        ? { indent: bullet[1], marker: `${bullet[2]} `, content: bullet[3] }
+        : quote
+          ? { indent: quote[1], marker: "> ", content: quote[2] }
+          : null;
+  if (!marker || selection.from !== line.to) return false;
+
+  if (marker.content.trim().length === 0) {
+    view.dispatch({
+      changes: { from: line.from, to: line.to, insert: marker.indent },
+      selection: { anchor: line.from + marker.indent.length },
+    });
+    return true;
+  }
+
+  view.dispatch({
+    changes: { from: selection.from, insert: `\n${marker.indent}${marker.marker}` },
+  });
+  return true;
+};
+
+export const indentMarkdownBlock = (view: EditorView): boolean => {
+  const { startLine, endLine } = getSelectedLineRange(view);
+  const selectedText = view.state.sliceDoc(startLine.from, endLine.to);
+  const lines = splitLines(selectedText);
+  if (!lines.some(lineSupportsMarkdownIndent)) return false;
+
+  const updated = lines
+    .map((line) => lineSupportsMarkdownIndent(line) ? `  ${line}` : line)
+    .join("\n");
+
+  view.dispatch({
+    changes: { from: startLine.from, to: endLine.to, insert: updated },
+    selection: { anchor: startLine.from, head: startLine.from + updated.length },
+  });
+  return true;
+};
+
+export const outdentMarkdownBlock = (view: EditorView): boolean => {
+  const { startLine, endLine } = getSelectedLineRange(view);
+  const selectedText = view.state.sliceDoc(startLine.from, endLine.to);
+  const lines = splitLines(selectedText);
+  if (!lines.some((line) => /^\s{1,2}(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+|>\s?)/.test(line))) {
+    return false;
+  }
+
+  const updated = lines
+    .map((line) => line.replace(/^ {1,2}(?=(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+|>\s?))/, ""))
+    .join("\n");
+
+  view.dispatch({
+    changes: { from: startLine.from, to: endLine.to, insert: updated },
+    selection: { anchor: startLine.from, head: startLine.from + updated.length },
+  });
+  return true;
+};
+
+export const canExecuteEditorCommand = (view: EditorView, command: EditorCommand | string): boolean => {
+  void command;
+  return !view.state.facet(EditorState.readOnly);
+};
+
+export const isEditorCommandActive = (view: EditorView, command: EditorCommand | string): boolean => {
+  const { from, to } = view.state.selection.main;
+
+  if (command in WRAP_COMMANDS) {
+    const { before, after } = WRAP_COMMANDS[command];
+    const beforeFrom = Math.max(0, from - before.length);
+    const afterTo = Math.min(view.state.doc.length, to + after.length);
+    return view.state.sliceDoc(beforeFrom, from) === before && view.state.sliceDoc(to, afterTo) === after;
+  }
+
+  const prefixPattern = activePrefixPattern(command);
+  if (!prefixPattern) return false;
+
+  const line = view.state.doc.lineAt(from);
+  return prefixPattern.test(line.text);
+};
+
+export const getEditorCommandState = (view: EditorView, command: EditorCommand | string) => ({
+  active: isEditorCommandActive(view, command),
+  enabled: canExecuteEditorCommand(view, command),
+});
 
 /**
  * Execute a markdown editing command on the editor view

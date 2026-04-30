@@ -4,6 +4,7 @@ export { MarkdownEditor } from "./editor";
 // Types
 export type {
   EditorCommand,
+  EditorCommandState,
   ToolbarItem,
   EditorPlugin,
   ToolbarContext,
@@ -13,7 +14,19 @@ export type {
 } from "./types";
 
 // Commands
-export { executeEditorCommand, wrapSelection, replaceSelection, insertAtCursor, getSelection } from "./commands";
+export {
+  canExecuteEditorCommand,
+  continueMarkdownBlock,
+  executeEditorCommand,
+  getEditorCommandState,
+  getSelection,
+  indentMarkdownBlock,
+  insertAtCursor,
+  isEditorCommandActive,
+  outdentMarkdownBlock,
+  replaceSelection,
+  wrapSelection,
+} from "./commands";
 
 // Toolbar
 export { getDefaultToolbarItems, createToolbarElement } from "./toolbar";
