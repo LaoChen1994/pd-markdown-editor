@@ -1,8 +1,26 @@
 {
   "name": "pd-editor-core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework-agnostic Markdown editor engine powered by CodeMirror 6",
   "type": "module",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pidan/pd-markdown-editor.git",
+    "directory": "packages/editor-core"
+  },
+  "homepage": "https://github.com/pidan/pd-markdown-editor#readme",
+  "bugs": {
+    "url": "https://github.com/pidan/pd-markdown-editor/issues"
+  },
+  "keywords": [
+    "markdown",
+    "editor",
+    "codemirror",
+    "typescript"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,15 +31,20 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "pd-markdown": "workspace:*",
-    "pd-markdown-ui": "workspace:*",
+    "pd-markdown": "^2.1.1",
     "@codemirror/autocomplete": "^6.18.0",
     "@codemirror/commands": "^6.7.0",
     "@codemirror/lang-markdown": "^6.3.0",

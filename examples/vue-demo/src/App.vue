@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { MarkdownEditor } from "pd-editor-vue";
+import { MarkdownEditor, imageUploadPlugin, tocPlugin } from "pd-editor-vue";
+import CustomBlockquote from "./CustomBlockquote.vue";
 
 const content = ref(`# Welcome to pd-editor
 
@@ -28,14 +29,23 @@ import { MarkdownEditor } from "pd-editor-vue";
 
 const theme = ref<"light" | "dark">("light");
 const preview = ref<"edit" | "preview" | "split">("split");
+const plugins = [
+  tocPlugin(),
+  imageUploadPlugin({
+    upload: async (file: File) => URL.createObjectURL(file),
+  }),
+];
+const renderComponentMap = {
+  blockquote: CustomBlockquote,
+};
 
-function toggleTheme() {
+const toggleTheme = () => {
   theme.value = theme.value === "light" ? "dark" : "light";
-}
+};
 
-function handleSave(value: string) {
+const handleSave = (value: string) => {
   alert("Saved! Length: " + value.length);
-}
+};
 </script>
 
 <template>
@@ -90,6 +100,8 @@ function handleSave(value: string) {
         :theme="theme"
         :preview="preview"
         :height="600"
+        :plugins="plugins"
+        :render-component-map="renderComponentMap"
         placeholder="Start writing Markdown..."
         @save="handleSave"
       />

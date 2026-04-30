@@ -25,8 +25,6 @@ export interface UseMarkdownEditorReturn {
   setValue: (value: string) => void;
   /** Execute a toolbar command */
   executeCommand: (command: EditorCommand | string) => void;
-  /** Get rendered HTML */
-  getPreviewHTML: () => string;
   /** Focus the editor */
   focus: () => void;
 }
@@ -73,8 +71,7 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
   const getValue = useCallback(() => editorRef.current?.getValue() ?? "", []);
   const setValue = useCallback((v: string) => editorRef.current?.setValue(v), []);
   const executeCommand = useCallback((cmd: EditorCommand | string) => editorRef.current?.executeCommand(cmd), []);
-  const getPreviewHTML = useCallback(() => editorRef.current?.getPreviewHTML() ?? "", []);
   const focus = useCallback(() => editorRef.current?.focus(), []);
 
-  return { containerRef, editorRef, getValue, setValue, executeCommand, getPreviewHTML, focus };
+  return { containerRef, editorRef, getValue, setValue, executeCommand, focus };
 }

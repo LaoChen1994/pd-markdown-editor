@@ -1,8 +1,55 @@
 import React, { useRef, useEffect, useState } from "react";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
-import { MarkdownRenderer } from "pd-markdown";
+import { MarkdownRenderer } from "pd-markdown/web";
+import { components as mdUiComponents } from "pd-markdown-ui";
 
 import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
+import type { ComponentMap } from "pd-markdown/web";
+
+export const markdownUiComponentMap: Partial<ComponentMap> = {
+  heading: ({ node, children }) => {
+    const tag = `h${node.depth}` as keyof typeof mdUiComponents;
+    const Heading = mdUiComponents[tag] ?? tag;
+    const data = node.data as { id?: unknown } | undefined;
+    const id = typeof data?.id === "string" ? data.id : undefined;
+    return React.createElement(Heading as React.ElementType, { id }, children);
+  },
+  paragraph: ({ children }) => React.createElement(mdUiComponents.p as React.ElementType, null, children),
+  list: ({ node, children }) => {
+    const List = node.ordered ? mdUiComponents.ol : mdUiComponents.ul;
+    const start = node.ordered && node.start != null && node.start !== 1 ? node.start : undefined;
+    return React.createElement(List as React.ElementType, { start }, children);
+  },
+  listItem: ({ node, children }) => {
+    if (typeof node.checked === "boolean") {
+      return React.createElement(mdUiComponents.li as React.ElementType, { className: "task-list-item" }, [
+        React.createElement("input", { key: "checkbox", type: "checkbox", checked: node.checked, readOnly: true }),
+        React.createElement("span", { key: "content" }, children),
+      ]);
+    }
+    return React.createElement(mdUiComponents.li as React.ElementType, null, children);
+  },
+  table: ({ children }) => React.createElement(mdUiComponents.table as React.ElementType, null, children),
+  tableRow: ({ isHeader, children }) => {
+    const row = React.createElement(mdUiComponents.tr as React.ElementType, null, children);
+    return isHeader ? React.createElement(mdUiComponents.thead as React.ElementType, null, row) : row;
+  },
+  tableCell: ({ node, children }) => {
+    const Cell = node.data?.isHeader ? mdUiComponents.th : mdUiComponents.td;
+    const align = node.data?.align ?? undefined;
+    return React.createElement(Cell as React.ElementType, { align }, children);
+  },
+  code: ({ node }) => {
+    const className = node.lang ? `language-${node.lang}` : undefined;
+    return React.createElement(
+      mdUiComponents.pre as React.ElementType,
+      null,
+      React.createElement(mdUiComponents.code as React.ElementType, { className }, node.value)
+    );
+  },
+  inlineCode: ({ node }) => React.createElement(mdUiComponents.code as React.ElementType, null, node.value),
+  blockquote: ({ children }) => React.createElement(mdUiComponents.blockquote as React.ElementType, null, children),
+};
 
 export interface MarkdownEditorProps {
   /** Controlled value */
@@ -33,13 +80,15 @@ export interface MarkdownEditorProps {
   style?: React.CSSProperties;
   /** Custom CM6 extensions */
   extensions?: Extension[];
+  /** Custom component overrides for Markdown rendering */
+  renderComponentMap?: Partial<ComponentMap>;
 }
 
 /**
  * MarkdownEditor React component
  *
  * Supports controlled (value+onChange) and uncontrolled (defaultValue) modes,
- * with optional split-view preview.
+ * with optional split-view preview powered by pd-markdown + pd-markdown-ui.
  */
 export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   value,
@@ -56,14 +105,19 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   className = "",
   style = {},
   extensions = [],
+  renderComponentMap,
 }) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CoreEditor | null>(null);
 
-  const rendererRef = useRef<MarkdownRenderer>(new MarkdownRenderer());
   const isControlled = value !== undefined;
-  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewContent, setPreviewContent] = useState("");
+
+  // Merge pd-markdown-ui components with user overrides
+  const mergedComponents = React.useMemo(
+    () => ({ ...markdownUiComponentMap, ...renderComponentMap }),
+    [renderComponentMap]
+  );
 
   // Initialize editor
   useEffect(() => {
@@ -77,7 +131,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       onChange: (v) => {
         onChange?.(v);
         if (preview === "split") {
-          setPreviewHtml(rendererRef.current.render(v));
+          setPreviewContent(v);
         }
       },
       onSave,
@@ -93,7 +147,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
     // Initial preview
     if (preview === "split") {
       const initVal = isControlled ? (value ?? "") : defaultValue;
-      setPreviewHtml(rendererRef.current.render(initVal));
+      setPreviewContent(initVal);
     }
 
     return () => {
@@ -117,7 +171,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   useEffect(() => {
     if (preview === "preview") {
       const content = isControlled ? (value ?? "") : defaultValue;
-      setPreviewHtml(rendererRef.current.render(content));
+      setPreviewContent(content);
     }
   }, [preview, value, defaultValue, isControlled]);
 
@@ -149,7 +203,6 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       )}
       {(preview === "split" || preview === "preview") && (
         <div
-          ref={previewContainerRef}
           className={`pd-md-preview pd-md-theme-${theme}`}
           style={{
             flex: 1,
@@ -158,8 +211,12 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
             padding: "24px",
             borderLeft: preview === "split" ? `1px solid ${theme === "dark" ? "#30363d" : "#d1d9e0"}` : "none",
           }}
-          dangerouslySetInnerHTML={{ __html: previewHtml }}
-        />
+        >
+          <MarkdownRenderer
+            source={previewContent}
+            components={mergedComponents}
+          />
+        </div>
       )}
     </div>
   );

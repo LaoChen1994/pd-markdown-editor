@@ -1,8 +1,27 @@
 {
   "name": "pd-editor-vue",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Vue 3 adapter for pd-editor-core Markdown editor",
   "type": "module",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pidan/pd-markdown-editor.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/pidan/pd-markdown-editor#readme",
+  "bugs": {
+    "url": "https://github.com/pidan/pd-markdown-editor/issues"
+  },
+  "keywords": [
+    "markdown",
+    "editor",
+    "vue",
+    "codemirror",
+    "typescript"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,9 +30,25 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js",
+      "require": "./dist/headless.cjs"
+    },
+    "./styles.css": {
+      "default": "./dist/styles.css"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -21,14 +56,17 @@
   },
   "dependencies": {
     "pd-editor-core": "workspace:*",
-    "pd-markdown": "workspace:*",
-    "pd-markdown-ui": "workspace:*",
-    "@codemirror/state": "^6.5.0"
+    "pd-markdown": "^2.1.1",
+    "pd-markdown-ui": "^1.1.1",
+    "pd-shad-ui": "^2.0.0",
+    "katex": "^0.16.45"
   },
   "peerDependencies": {
-    "vue": ">=3.3.0"
+    "tailwindcss": ">=3.0.0 || insiders",
+    "vue": "^3.3.0 || ^3.4.0 || ^3.5.0"
   },
   "devDependencies": {
+    "tailwindcss": "^3.4.17",
     "vue": "^3.5.0",
     "tsup": "^8.4.0",
     "typescript": "^5.7.3"

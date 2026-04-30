@@ -29,4 +29,4 @@ export { PluginManager } from "./plugins";
 export { imageUploadPlugin } from "./plugins/image-upload";
 export type { ImageUploadPluginOptions } from "./plugins/image-upload";
 export { tocPlugin } from "./plugins/toc";
-export type { TocPluginOptions } from "./plugins/toc";
+export type { TocPluginOptions, TocItem } from "./plugins/toc";

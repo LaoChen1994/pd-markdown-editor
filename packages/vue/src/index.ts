@@ -1,8 +1,4 @@
-export { MarkdownEditor } from "./MarkdownEditor";
-export { useMarkdownEditor } from "./useMarkdownEditor";
-export type { UseMarkdownEditorOptions, UseMarkdownEditorReturn } from "./useMarkdownEditor";
-export { Toolbar } from "./Toolbar";
+import "pd-shad-ui/styles.css";
+import "katex/dist/katex.min.css";
 
-// Re-export useful types from core
-export type { EditorCommand, EditorPlugin, ToolbarItem } from "pd-editor-core";
-export { imageUploadPlugin, tocPlugin } from "pd-editor-core";
+export * from "./headless";
