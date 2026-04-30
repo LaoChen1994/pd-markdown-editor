@@ -9,6 +9,8 @@ function createEditor(value: string): MarkdownEditorInstance {
     focus: () => undefined,
     executeCommand: () => undefined,
     setReadOnly: () => undefined,
+    use: () => createEditor(value),
+    unuse: () => createEditor(value),
     replaceSelection: () => undefined,
     wrapSelection: () => undefined,
     getSelection: () => "",

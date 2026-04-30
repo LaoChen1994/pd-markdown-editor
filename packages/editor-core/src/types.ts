@@ -51,6 +51,8 @@ export interface MarkdownEditorInstance {
   focus(): void;
   executeCommand(command: EditorCommand | string): void;
   setReadOnly(readOnly: boolean): void;
+  use(plugin: EditorPlugin): MarkdownEditorInstance;
+  unuse(name: string): MarkdownEditorInstance;
   replaceSelection(text: string): void;
   wrapSelection(before: string, after: string): void;
   getSelection(): string;
