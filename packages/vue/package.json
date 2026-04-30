@@ -1,6 +1,6 @@
 {
   "name": "pd-editor-vue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vue 3 adapter for pd-editor-core Markdown editor",
   "type": "module",
   "repository": {
@@ -12,7 +12,13 @@
   "bugs": {
     "url": "https://github.com/pidan/pd-markdown-editor/issues"
   },
-  "keywords": ["markdown", "editor", "vue", "codemirror", "typescript"],
+  "keywords": [
+    "markdown",
+    "editor",
+    "vue",
+    "codemirror",
+    "typescript"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,8 +37,12 @@
       "default": "./dist/styles.css"
     }
   },
-  "files": ["dist"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "publishConfig": {
     "access": "public"
   },
