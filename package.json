@@ -7,13 +7,23 @@
     "build": "pnpm -r run build",
     "dev": "pnpm -r --parallel run dev",
     "lint": "eslint .",
+    "typecheck": "pnpm -r --filter './packages/*' exec tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && NPM_CONFIG_CACHE=/tmp/pd-markdown-editor-npm-cache pnpm -r --filter './packages/*' exec npm pack --dry-run",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish",
     "clean": "pnpm -r run clean"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.12",
     "@eslint/js": "^9.18.0",
+    "@vue/server-renderer": "^3.5.0",
     "eslint": "^9.18.0",
+    "jsdom": "^25.0.1",
     "tsup": "^8.4.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.21.0"
+    "typescript-eslint": "^8.21.0",
+    "vitest": "^2.1.8"
   }
 }

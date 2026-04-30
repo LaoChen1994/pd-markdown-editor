@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MarkdownEditor } from "pd-editor-react";
+import { MarkdownEditor, imageUploadPlugin, tocPlugin } from "pd-editor-react";
 
 const INITIAL_MD = `# Welcome to pd-editor
 
@@ -115,6 +115,19 @@ function App() {
           preview={preview}
           height={600}
           placeholder="Start writing Markdown..."
+          plugins={[
+            tocPlugin(),
+            imageUploadPlugin({
+              upload: async (file) => URL.createObjectURL(file),
+            }),
+          ]}
+          renderComponentMap={{
+            blockquote: ({ children }) => (
+              <blockquote style={{ borderLeft: "4px solid #0969da", paddingLeft: 16 }}>
+                {children}
+              </blockquote>
+            ),
+          }}
         />
       </div>
     </div>

@@ -7,5 +7,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   splitting: false,
-  external: ["pd-markdown", "pd-markdown-ui"],
+  external: ["pd-markdown", "pd-markdown/parser"],
 });

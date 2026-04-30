@@ -1,8 +1,6 @@
 import { EditorView } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
-import type { Extension } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
-import { MarkdownRenderer } from "pd-markdown";
 import type { MarkdownEditorOptions, EditorCommand, MarkdownEditorInstance, EditorPlugin } from "./types";
 import { createDefaultExtensions } from "./extensions/default";
 import { createLightTheme, createDarkTheme } from "./themes";
@@ -28,15 +26,15 @@ import { PluginManager } from "./plugins";
  * ```
  */
 export class MarkdownEditor implements MarkdownEditorInstance {
-  private view: EditorView;
-  private renderer: MarkdownRenderer;
+  private view?: EditorView;
   private pluginManager: PluginManager;
   private wrapperEl: HTMLElement;
   private toolbarEl: HTMLElement | null = null;
+  private themeCompartment = new Compartment();
   private currentTheme: "light" | "dark";
-  private themeCompartment: { extension: Extension; reconfigure: (ext: Extension) => void } | null = null;
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
+  private initialValue: string;
 
   constructor(options: MarkdownEditorOptions) {
     const {
@@ -50,14 +48,11 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       extensions: userExtensions = [],
       plugins = [],
       toolbar = true,
-      preview,
     } = options;
 
     this.currentTheme = theme;
     this.onChange = onChange;
-    this.renderer = preview && typeof preview === "object" && preview.renderer
-      ? preview.renderer
-      : new MarkdownRenderer();
+    this.initialValue = initialValue;
 
     // Plugin manager
     this.pluginManager = new PluginManager();
@@ -125,7 +120,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
         doc: initialValue,
         extensions: [
           ...defaultExts,
-          themeExt,
+          this.themeCompartment.of(themeExt),
           ...pluginExts,
           saveKeymap,
           updateListener,
@@ -137,72 +132,52 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   }
 
   getValue(): string {
-    return this.view.state.doc.toString();
+    return this.view?.state.doc.toString() ?? this.initialValue;
   }
 
   setValue(value: string): void {
+    if (!this.view) return;
     this.view.dispatch({
       changes: { from: 0, to: this.view.state.doc.length, insert: value },
     });
   }
 
   focus(): void {
-    this.view.focus();
+    this.view?.focus();
   }
 
   executeCommand(command: EditorCommand | string): void {
+    if (!this.view) return;
     executeEditorCommand(this.view, command as EditorCommand);
-  }
-
-  getPreviewHTML(): string {
-    return this.renderer.render(this.getValue());
   }
 
   setTheme(theme: "light" | "dark"): void {
     if (theme === this.currentTheme) return;
     this.currentTheme = theme;
     this.wrapperEl.style.backgroundColor = theme === "dark" ? "#0d1117" : "#ffffff";
-    // Reconfigure requires recreating — dispatch a full reconfiguration
-    const newTheme = theme === "dark" ? createDarkTheme() : createLightTheme();
-    this.view.dispatch({ effects: [] }); // trigger update
-    // For full theme swap, we recreate the editor state
-    const doc = this.getValue();
-    const parent = this.view.dom.parentElement;
-    if (!parent) return;
-    this.view.destroy();
-    const defaultExts = createDefaultExtensions({});
-    this.view = new EditorView({
-      state: EditorState.create({
-        doc,
-        extensions: [
-          ...defaultExts,
-          newTheme,
-          EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-              const value = update.state.doc.toString();
-              this.onChange?.(value);
-              this.pluginManager.notifyUpdate(value, this);
-            }
-          }),
-        ],
-      }),
-      parent,
+    if (!this.view) return;
+    this.view.dispatch({
+      effects: this.themeCompartment.reconfigure(theme === "dark" ? createDarkTheme() : createLightTheme()),
     });
   }
 
   replaceSelection(text: string): void {
+    if (!this.view) return;
     replaceSelection(this.view, text);
   }
 
   wrapSelection(before: string, after: string): void {
+    if (!this.view) return;
     wrapSelection(this.view, before, after);
   }
 
   getSelection(): string {
+    if (!this.view) return "";
     return getSelection(this.view);
   }
 
   insertAtCursor(text: string): void {
+    if (!this.view) return;
     insertAtCursor(this.view, text);
   }
 
@@ -217,6 +192,9 @@ export class MarkdownEditor implements MarkdownEditorInstance {
 
   /** Get the underlying CodeMirror EditorView */
   getEditorView(): EditorView {
+    if (!this.view) {
+      throw new Error("EditorView is not ready yet.");
+    }
     return this.view;
   }
 
@@ -224,7 +202,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   destroy(): void {
     if (this.updateTimer) clearTimeout(this.updateTimer);
     this.pluginManager.destroyAll();
-    this.view.destroy();
+    this.view?.destroy();
     this.wrapperEl.remove();
   }
 }

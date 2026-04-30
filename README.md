@@ -24,8 +24,8 @@ A high-performance, modular, and framework-agnostic Markdown editor monorepo. Po
 
 | Package | Version | Description |
 |---|---|---|
-| [`pd-markdown`](./packages/markdown) | `0.1.0` | Core Markdown parser & highlighters. |
-| [`pd-markdown-ui`](./packages/markdown-ui) | `0.1.0` | CSS & HTML UI for Markdown preview. |
+| [`pd-markdown`](https://www.npmjs.com/package/pd-markdown) | `2.x` | External Markdown parser & renderer. |
+| [`pd-markdown-ui`](https://www.npmjs.com/package/pd-markdown-ui) | `1.x` | External Markdown preview UI primitives. |
 | [`pd-editor-core`](./packages/editor-core) | `0.1.0` | Framework-agnostic editor engine. |
 | [`pd-editor-react`](./packages/react) | `0.1.0` | React adapter & hooks. |
 | [`pd-editor-vue`](./packages/vue) | `0.1.0` | Vue 3 adapter & composables. |
@@ -33,6 +33,14 @@ A high-performance, modular, and framework-agnostic Markdown editor monorepo. Po
 ---
 
 ## 🚀 Quick Start
+
+Install the adapter with its framework peers. The styled React/Vue entries also expect Tailwind because `pd-markdown-ui` uses `pd-shad-ui`'s Tailwind-powered `pd-*` classes.
+
+```bash
+pnpm add pd-editor-react pd-editor-core react react-dom tailwindcss
+# or
+pnpm add pd-editor-vue pd-editor-core vue tailwindcss
+```
 
 ### React Usage
 
@@ -53,6 +61,13 @@ function App() {
     />
   );
 }
+```
+
+The default React and Vue entries include `pd-shad-ui` and KaTeX styles automatically. For manual style control, import the headless entry and styles explicitly:
+
+```tsx
+import { MarkdownEditor } from 'pd-editor-react/headless';
+import 'pd-editor-react/styles.css';
 ```
 
 ### Vue 3 Usage
@@ -117,11 +132,14 @@ import { imageUploadPlugin, tocPlugin } from 'pd-editor-core';
 
 ## 🛠️ Development
 
-This monorepo uses `pnpm` and `tsup` for high-performance builds.
+This monorepo uses `pnpm`, `tsup`, Vitest, and Changesets for build, test, and release workflows.
 
 ```bash
 # Install dependencies
 pnpm install
+
+# Full CI gate
+pnpm run ci
 
 # Build all packages
 pnpm build
@@ -134,6 +152,14 @@ pnpm --filter vue-demo dev
 pnpm lint
 ```
 
+Packages are versioned and published through Changesets:
+
+```bash
+pnpm changeset
+pnpm version-packages
+pnpm release
+```
+
 ## 📐 Architecture
 
 The project follows a layered architecture to ensure maximum reusability:
@@ -142,9 +168,10 @@ The project follows a layered architecture to ensure maximum reusability:
 graph TD
     A[pd-markdown] --> B[pd-markdown-ui]
     A --> C[pd-editor-core]
-    B --> C
     C --> D[pd-editor-react]
     C --> E[pd-editor-vue]
+    B --> D
+    B --> E
 ```
 
 ## 📄 License

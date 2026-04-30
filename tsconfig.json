@@ -1,8 +1,6 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/markdown" },
-    { "path": "packages/markdown-ui" },
     { "path": "packages/editor-core" },
     { "path": "packages/react" },
     { "path": "packages/vue" }

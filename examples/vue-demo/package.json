@@ -11,8 +11,6 @@
   "dependencies": {
     "pd-editor-vue": "workspace:*",
     "pd-editor-core": "workspace:*",
-    "pd-markdown": "workspace:*",
-    "pd-markdown-ui": "workspace:*",
     "vue": "^3.5.0"
   },
   "devDependencies": {
