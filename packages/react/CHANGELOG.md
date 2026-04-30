@@ -1,5 +1,16 @@
 # pd-editor-react
 
+## 1.0.0
+
+### Major Changes
+
+- Release the stabilized editor packages as the first major version.
+
+### Patch Changes
+
+- Updated dependencies
+  - pd-editor-core@1.0.0
+
 ## 0.2.0
 
 ### Minor Changes

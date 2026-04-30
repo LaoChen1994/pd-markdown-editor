@@ -1,6 +1,6 @@
 {
   "name": "pd-editor-vue",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Vue 3 adapter for pd-editor-core Markdown editor",
   "type": "module",
   "repository": {
