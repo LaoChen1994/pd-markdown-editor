@@ -26,9 +26,9 @@ A high-performance, modular, and framework-agnostic Markdown editor monorepo. Po
 |---|---|---|
 | [`pd-markdown`](https://www.npmjs.com/package/pd-markdown) | `2.x` | External Markdown parser & renderer. |
 | [`pd-markdown-ui`](https://www.npmjs.com/package/pd-markdown-ui) | `1.x` | External Markdown preview UI primitives. |
-| [`pd-editor-core`](./packages/editor-core) | `0.1.0` | Framework-agnostic editor engine. |
-| [`pd-editor-react`](./packages/react) | `0.1.0` | React adapter & hooks. |
-| [`pd-editor-vue`](./packages/vue) | `0.1.0` | Vue 3 adapter & composables. |
+| [`pd-editor-core`](./packages/editor-core) | `1.x` | Framework-agnostic editor engine. |
+| [`pd-editor-react`](./packages/react) | `1.x` | React adapter & hooks. |
+| [`pd-editor-vue`](./packages/vue) | `1.x` | Vue 3 adapter & composables. |
 
 ---
 
@@ -126,6 +126,30 @@ import { imageUploadPlugin, tocPlugin } from 'pd-editor-core';
     tocPlugin()
   ]}
 />
+```
+
+Runtime plugins can also be installed and removed after the editor is mounted:
+
+```ts
+editor.use(tocPlugin());
+editor.unuse('toc');
+```
+
+## ⌨️ Editing Experience
+
+The core editor includes Markdown-aware typing behavior:
+
+- `Enter` continues bullet, ordered, task, and quote blocks.
+- Empty list/task/quote markers are removed on `Enter`.
+- `Tab` and `Shift+Tab` indent and outdent Markdown block lines.
+- Formatting shortcuts cover bold, italic, links, headings, lists, quotes, and strikethrough.
+
+Toolbar integrations can query command state directly:
+
+```ts
+editor.isActive('bold');
+editor.canExecute('link');
+editor.getCommandState('heading2'); // { active, enabled }
 ```
 
 ---

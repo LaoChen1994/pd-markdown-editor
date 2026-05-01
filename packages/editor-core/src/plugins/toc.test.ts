@@ -7,7 +7,13 @@ function createEditor(value: string): MarkdownEditorInstance {
     getValue: () => value,
     setValue: () => undefined,
     focus: () => undefined,
+    canExecute: () => true,
+    getCommandState: () => ({ active: false, enabled: true }),
+    isActive: () => false,
     executeCommand: () => undefined,
+    setReadOnly: () => undefined,
+    use: () => createEditor(value),
+    unuse: () => createEditor(value),
     replaceSelection: () => undefined,
     wrapSelection: () => undefined,
     getSelection: () => "",
@@ -26,4 +32,3 @@ describe("tocPlugin", () => {
     expect(links).toEqual(["#same", "#same-1"]);
   });
 });
-

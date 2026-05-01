@@ -24,6 +24,14 @@ export interface ToolbarItem {
   divider?: boolean;
 }
 
+/** Current state for a command in the editor selection */
+export interface EditorCommandState {
+  /** Whether the command applies to the current selection or line */
+  active: boolean;
+  /** Whether the command can be executed in the current editor state */
+  enabled: boolean;
+}
+
 /** Editor plugin interface */
 export interface EditorPlugin {
   /** Unique plugin name */
@@ -50,6 +58,12 @@ export interface MarkdownEditorInstance {
   setValue(value: string): void;
   focus(): void;
   executeCommand(command: EditorCommand | string): void;
+  canExecute(command: EditorCommand | string): boolean;
+  getCommandState(command: EditorCommand | string): EditorCommandState;
+  isActive(command: EditorCommand | string): boolean;
+  setReadOnly(readOnly: boolean): void;
+  use(plugin: EditorPlugin): MarkdownEditorInstance;
+  unuse(name: string): MarkdownEditorInstance;
   replaceSelection(text: string): void;
   wrapSelection(before: string, after: string): void;
   getSelection(): string;

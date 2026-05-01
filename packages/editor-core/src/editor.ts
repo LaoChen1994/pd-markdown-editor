@@ -1,10 +1,29 @@
-import { EditorView } from "@codemirror/view";
-import { Compartment, EditorState } from "@codemirror/state";
-import { keymap } from "@codemirror/view";
-import type { MarkdownEditorOptions, EditorCommand, MarkdownEditorInstance, EditorPlugin } from "./types";
+import { EditorView, keymap } from "@codemirror/view";
+import { Compartment, EditorState, Prec } from "@codemirror/state";
+import type { Extension } from "@codemirror/state";
+import type {
+  EditorCommand,
+  EditorCommandState,
+  EditorPlugin,
+  MarkdownEditorInstance,
+  MarkdownEditorOptions,
+  ToolbarItem,
+} from "./types";
 import { createDefaultExtensions } from "./extensions/default";
 import { createLightTheme, createDarkTheme } from "./themes";
-import { executeEditorCommand, wrapSelection, replaceSelection, insertAtCursor, getSelection } from "./commands";
+import {
+  continueMarkdownBlock,
+  canExecuteEditorCommand,
+  executeEditorCommand,
+  getEditorCommandState,
+  getSelection,
+  indentMarkdownBlock,
+  insertAtCursor,
+  isEditorCommandActive,
+  outdentMarkdownBlock,
+  replaceSelection,
+  wrapSelection,
+} from "./commands";
 import { getDefaultToolbarItems, createToolbarElement } from "./toolbar";
 import { PluginManager } from "./plugins";
 
@@ -31,7 +50,12 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private wrapperEl: HTMLElement;
   private toolbarEl: HTMLElement | null = null;
   private themeCompartment = new Compartment();
+  private readOnlyCompartment = new Compartment();
+  private pluginCompartment = new Compartment();
+  private pluginExtensions = new Map<string, Extension[]>();
+  private baseToolbarItems: ToolbarItem[] | null;
   private currentTheme: "light" | "dark";
+  private currentReadOnly: boolean;
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
   private initialValue: string;
@@ -51,8 +75,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     } = options;
 
     this.currentTheme = theme;
+    this.currentReadOnly = readOnly;
     this.onChange = onChange;
     this.initialValue = initialValue;
+    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems() : toolbar;
 
     // Plugin manager
     this.pluginManager = new PluginManager();
@@ -73,16 +99,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       backgroundColor: theme === "dark" ? "#0d1117" : "#ffffff",
     });
 
-    // Toolbar
-    if (toolbar !== false) {
-      const items = toolbar === true ? getDefaultToolbarItems() : toolbar;
-      const pluginItems = this.pluginManager.getToolbarItems({
-        executeCommand: (cmd) => this.executeCommand(cmd),
-        editor: this,
-      });
-      this.toolbarEl = createToolbarElement([...items, ...pluginItems], (cmd) => this.executeCommand(cmd));
-      this.wrapperEl.appendChild(this.toolbarEl);
-    }
+    this.refreshToolbar();
 
     // Editor container
     const editorContainer = document.createElement("div");
@@ -93,9 +110,9 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     parent.appendChild(this.wrapperEl);
 
     // Build extensions
-    const defaultExts = createDefaultExtensions({ placeholder, readOnly });
+    const defaultExts = createDefaultExtensions({ placeholder });
     const themeExt = theme === "dark" ? createDarkTheme() : createLightTheme();
-    const pluginExts = this.pluginManager.installAll(this);
+    const pluginExts = plugins.flatMap((plugin) => this.installPluginExtension(plugin));
 
     // Save keybinding
     const saveKeymap = onSave
@@ -120,8 +137,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
         doc: initialValue,
         extensions: [
           ...defaultExts,
+          this.createMarkdownKeymap(),
           this.themeCompartment.of(themeExt),
-          ...pluginExts,
+          this.readOnlyCompartment.of(this.createReadOnlyExtension(readOnly)),
+          this.pluginCompartment.of(pluginExts),
           saveKeymap,
           updateListener,
           ...userExtensions,
@@ -151,6 +170,21 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     executeEditorCommand(this.view, command as EditorCommand);
   }
 
+  canExecute(command: EditorCommand | string): boolean {
+    if (!this.view) return false;
+    return canExecuteEditorCommand(this.view, command);
+  }
+
+  getCommandState(command: EditorCommand | string): EditorCommandState {
+    if (!this.view) return { active: false, enabled: false };
+    return getEditorCommandState(this.view, command);
+  }
+
+  isActive(command: EditorCommand | string): boolean {
+    if (!this.view) return false;
+    return isEditorCommandActive(this.view, command);
+  }
+
   setTheme(theme: "light" | "dark"): void {
     if (theme === this.currentTheme) return;
     this.currentTheme = theme;
@@ -158,6 +192,15 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     if (!this.view) return;
     this.view.dispatch({
       effects: this.themeCompartment.reconfigure(theme === "dark" ? createDarkTheme() : createLightTheme()),
+    });
+  }
+
+  setReadOnly(readOnly: boolean): void {
+    if (readOnly === this.currentReadOnly) return;
+    this.currentReadOnly = readOnly;
+    if (!this.view) return;
+    this.view.dispatch({
+      effects: this.readOnlyCompartment.reconfigure(this.createReadOnlyExtension(readOnly)),
     });
   }
 
@@ -184,9 +227,22 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   /** Register a plugin at runtime */
   use(plugin: EditorPlugin): this {
     this.pluginManager.register(plugin);
-    plugin.install?.(this);
-    // Runtime plugin extensions can't be added easily to CM6 without compartments.
-    // For now, plugins registered at construction time get full CM6 extension support.
+    const extensions = this.installPluginExtension(plugin);
+    this.reconfigurePlugins();
+    this.refreshToolbar();
+    if (extensions.length === 0) {
+      plugin.onUpdate?.({ value: this.getValue(), editor: this });
+    }
+    return this;
+  }
+
+  /** Remove a plugin by name at runtime */
+  unuse(name: string): this {
+    this.pluginExtensions.delete(name);
+    if (this.pluginManager.unregister(name)) {
+      this.reconfigurePlugins();
+      this.refreshToolbar();
+    }
     return this;
   }
 
@@ -204,5 +260,62 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     this.pluginManager.destroyAll();
     this.view?.destroy();
     this.wrapperEl.remove();
+  }
+
+  private createReadOnlyExtension(readOnly: boolean): Extension[] {
+    return [
+      EditorState.readOnly.of(readOnly),
+      EditorView.editable.of(!readOnly),
+    ];
+  }
+
+  private installPluginExtension(plugin: EditorPlugin): Extension[] {
+    const extensions = this.pluginManager.install(plugin, this);
+    this.pluginExtensions.set(plugin.name, extensions);
+    return extensions;
+  }
+
+  private reconfigurePlugins(): void {
+    if (!this.view) return;
+    this.view.dispatch({
+      effects: this.pluginCompartment.reconfigure([...this.pluginExtensions.values()].flat()),
+    });
+  }
+
+  private refreshToolbar(): void {
+    if (!this.baseToolbarItems) return;
+    const pluginItems = this.pluginManager.getToolbarItems({
+      executeCommand: (cmd) => this.executeCommand(cmd),
+      editor: this,
+    });
+    const nextToolbar = createToolbarElement(
+      [...this.baseToolbarItems, ...pluginItems],
+      (cmd) => this.executeCommand(cmd)
+    );
+
+    if (this.toolbarEl) {
+      this.toolbarEl.replaceWith(nextToolbar);
+    } else {
+      this.wrapperEl.insertBefore(nextToolbar, this.wrapperEl.firstChild);
+    }
+    this.toolbarEl = nextToolbar;
+  }
+
+  private createMarkdownKeymap(): Extension {
+    return Prec.high(keymap.of([
+      { key: "Enter", run: continueMarkdownBlock },
+      { key: "Tab", run: indentMarkdownBlock },
+      { key: "Shift-Tab", run: outdentMarkdownBlock },
+      { key: "Mod-b", run: (view) => executeEditorCommand(view, "bold") },
+      { key: "Mod-i", run: (view) => executeEditorCommand(view, "italic") },
+      { key: "Mod-k", run: (view) => executeEditorCommand(view, "link") },
+      { key: "Mod-Shift-x", run: (view) => executeEditorCommand(view, "strikethrough") },
+      { key: "Mod-Alt-1", run: (view) => executeEditorCommand(view, "heading1") },
+      { key: "Mod-Alt-2", run: (view) => executeEditorCommand(view, "heading2") },
+      { key: "Mod-Alt-3", run: (view) => executeEditorCommand(view, "heading3") },
+      { key: "Mod-Shift-7", run: (view) => executeEditorCommand(view, "orderedList") },
+      { key: "Mod-Shift-8", run: (view) => executeEditorCommand(view, "unorderedList") },
+      { key: "Mod-Shift-9", run: (view) => executeEditorCommand(view, "quote") },
+    ]));
   }
 }
