@@ -106,6 +106,30 @@ describe("MarkdownEditor", () => {
     editor.destroy();
   });
 
+  it("does not execute markdown commands while read-only", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "hello",
+      readOnly: true,
+      toolbar: false,
+    });
+    const view = editor.getEditorView();
+
+    view.dispatch({ selection: { anchor: 0, head: 5 } });
+    editor.executeCommand("bold");
+
+    expect(editor.getValue()).toBe("hello");
+    expect(runScopeHandlers(
+      view,
+      new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
+      "editor"
+    )).toBe(false);
+    expect(editor.getValue()).toBe("hello");
+
+    editor.destroy();
+  });
+
   it("handles common markdown keyboard shortcuts", () => {
     const parent = document.createElement("div");
     const editor = new MarkdownEditor({

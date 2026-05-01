@@ -159,7 +159,11 @@ const insertCodeBlock = (view: EditorView): boolean => {
 const lineSupportsMarkdownIndent = (text: string): boolean =>
   /^(\s*)(?:[-*+]\s+(?:\[[ xX]\]\s+)?|\d+\.\s+|>\s?)/.test(text);
 
+const canChangeDocument = (view: EditorView): boolean => !view.state.facet(EditorState.readOnly);
+
 export const continueMarkdownBlock = (view: EditorView): boolean => {
+  if (!canChangeDocument(view)) return false;
+
   const selection = view.state.selection.main;
   if (!selection.empty) return false;
 
@@ -195,6 +199,8 @@ export const continueMarkdownBlock = (view: EditorView): boolean => {
 };
 
 export const indentMarkdownBlock = (view: EditorView): boolean => {
+  if (!canChangeDocument(view)) return false;
+
   const { startLine, endLine } = getSelectedLineRange(view);
   const selectedText = view.state.sliceDoc(startLine.from, endLine.to);
   const lines = splitLines(selectedText);
@@ -212,6 +218,8 @@ export const indentMarkdownBlock = (view: EditorView): boolean => {
 };
 
 export const outdentMarkdownBlock = (view: EditorView): boolean => {
+  if (!canChangeDocument(view)) return false;
+
   const { startLine, endLine } = getSelectedLineRange(view);
   const selectedText = view.state.sliceDoc(startLine.from, endLine.to);
   const lines = splitLines(selectedText);
@@ -232,7 +240,7 @@ export const outdentMarkdownBlock = (view: EditorView): boolean => {
 
 export const canExecuteEditorCommand = (view: EditorView, command: EditorCommand | string): boolean => {
   void command;
-  return !view.state.facet(EditorState.readOnly);
+  return canChangeDocument(view);
 };
 
 export const isEditorCommandActive = (view: EditorView, command: EditorCommand | string): boolean => {
@@ -261,6 +269,8 @@ export const getEditorCommandState = (view: EditorView, command: EditorCommand |
  * Execute a markdown editing command on the editor view
  */
 export function executeEditorCommand(view: EditorView, command: EditorCommand | string): boolean {
+  if (!canChangeDocument(view)) return false;
+
   // Undo/redo
   if (command === "undo") return undo(view);
   if (command === "redo") return redo(view);
@@ -305,6 +315,8 @@ export function executeEditorCommand(view: EditorView, command: EditorCommand | 
  * Helper: wrap current selection with before/after text
  */
 export function wrapSelection(view: EditorView, before: string, after: string): void {
+  if (!canChangeDocument(view)) return;
+
   const { from, to } = view.state.selection.main;
   const selectedText = view.state.sliceDoc(from, to);
   const replacement = `${before}${selectedText || "text"}${after}`;
@@ -316,6 +328,8 @@ export function wrapSelection(view: EditorView, before: string, after: string): 
  * Helper: replace current selection
  */
 export function replaceSelection(view: EditorView, text: string): void {
+  if (!canChangeDocument(view)) return;
+
   const { from, to } = view.state.selection.main;
   view.dispatch({ changes: { from, to, insert: text } });
   view.focus();
@@ -325,6 +339,8 @@ export function replaceSelection(view: EditorView, text: string): void {
  * Helper: insert text at cursor position
  */
 export function insertAtCursor(view: EditorView, text: string): void {
+  if (!canChangeDocument(view)) return;
+
   const pos = view.state.selection.main.head;
   view.dispatch({ changes: { from: pos, insert: text } });
   view.focus();

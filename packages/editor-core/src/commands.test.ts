@@ -162,12 +162,34 @@ describe("editor commands", () => {
     const view = new EditorView({
       state: EditorState.create({
         doc: "hello",
+        selection: { anchor: 0, head: 5 },
         extensions: [EditorState.readOnly.of(true)],
       }),
       parent,
     });
 
     expect(canExecuteEditorCommand(view, "bold")).toBe(false);
+    expect(executeEditorCommand(view, "bold")).toBe(false);
+    expect(view.state.doc.toString()).toBe("hello");
+
+    view.destroy();
+  });
+
+  it("does not continue or indent markdown blocks in read-only editors", () => {
+    const parent = document.createElement("div");
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: "- one",
+        selection: { anchor: 5 },
+        extensions: [EditorState.readOnly.of(true)],
+      }),
+      parent,
+    });
+
+    expect(continueMarkdownBlock(view)).toBe(false);
+    expect(indentMarkdownBlock(view)).toBe(false);
+    expect(outdentMarkdownBlock(view)).toBe(false);
+    expect(view.state.doc.toString()).toBe("- one");
 
     view.destroy();
   });
