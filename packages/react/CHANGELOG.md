@@ -1,5 +1,20 @@
 # pd-editor-react
 
+## 1.1.3
+
+### Patch Changes
+
+- cb05943: Use the compiled pd-markdown-ui stylesheet entry.
+
+  React and Vue adapters now import `pd-markdown-ui/styles.css` so preview components receive the bundled Markdown UI styles without requiring consumers to compile pd-shad-ui Tailwind source styles.
+
+- 3613023: Fix single-line selection visibility in the editor.
+
+  The active line highlight now uses a translucent background so it no longer hides selection backgrounds on the current line, including Markdown list lines such as `- item`.
+
+- Updated dependencies [3613023]
+  - pd-editor-core@1.1.3
+
 ## 1.1.2
 
 ### Patch Changes
