@@ -141,11 +141,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       pd-markdown-ui:
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
-      pd-shad-ui:
-        specifier: ^2.0.0
-        version: 2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
+        specifier: ^1.3.1
+        version: 1.3.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
     devDependencies:
       '@types/react':
         specifier: ^19.0.0
@@ -181,11 +178,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       pd-markdown-ui:
-        specifier: ^1.1.1
-        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
-      pd-shad-ui:
-        specifier: ^2.0.0
-        version: 2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
+        specifier: ^1.3.1
+        version: 1.3.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
     devDependencies:
       tailwindcss:
         specifier: ^3.4.17
@@ -2043,8 +2037,8 @@ packages:
     resolution: {integrity: sha512-f1WO2Lx8a9t8DARmcWAUPJbu0G20bJlj8L4z72K00TMeJAoyLr/tHhI/pzYBLrR4dXWkcxO1cWYZEOX8DKHTqA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@ungap/structured-clone@1.3.0':
-    resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+  '@ungap/structured-clone@1.3.1':
+    resolution: {integrity: sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ==}
 
   '@vitejs/plugin-react@4.7.0':
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
@@ -3214,8 +3208,8 @@ packages:
     resolution: {integrity: sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==}
     engines: {node: '>= 14.16'}
 
-  pd-markdown-ui@1.1.1:
-    resolution: {integrity: sha512-deOjKDLx5fDzC4S3T8+WRJt5UIXhwwozYz0TBN8SpabY4XD4jhT/1kX0BTyhCxlb0febemluecik9Hdsx7LkNQ==}
+  pd-markdown-ui@1.3.1:
+    resolution: {integrity: sha512-5ySRNFy8hq3DmpbI66tHWguNspsf9wqa0QlEOcDUGERwZS5ovRDAaSELEghRYwjZ38fxEc2vMOP992P7MF0itA==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -3239,8 +3233,8 @@ packages:
       react-dom:
         optional: true
 
-  pd-shad-ui@2.0.0:
-    resolution: {integrity: sha512-loBV0vViQ4yn1QcBra2Lp6n4NEvEj6lNwb0pfWAvY6lG0/1nHcDFo1b5UGCC7bJWiW5pMbRQrOSbtbAHcMI5NQ==}
+  pd-shad-ui@2.1.0:
+    resolution: {integrity: sha512-pSJTEBFHCimSGyHCPvpbpuFKbPb4SB66K4EPKnNH0OPwEOoGx7W5BHjzXJt0u5/d0m2gfeHJj5hAXgLr1+UIhw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -3364,8 +3358,8 @@ packages:
     peerDependencies:
       react: ^19.2.5
 
-  react-hook-form@7.74.0:
-    resolution: {integrity: sha512-yR6wHr99p9wFv686jhRWVSFhUvDvNbdUf2dKlbno8/VKOCuoNobDGC6S+M2dua9A9Yo8vpcrp8assIYbsZCQ9g==}
+  react-hook-form@7.75.0:
+    resolution: {integrity: sha512-Ovv94H+0p3sJ7B9B5QxPuCP1u8V/cHuVGyH55cSwodYDtoJwK+fqk3vjfIgSX59I2U/bU4z0nRJ9HMLpNiWEmw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -3394,8 +3388,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@4.10.0:
-    resolution: {integrity: sha512-frjewRQt7TCv/vCH1pJfjZ7RxAhr5pKuqVQtVgzFq/vherxBFOWyC3xMbryx5Ti2wylViGUFc93Etg4rB3E0UA==}
+  react-resizable-panels@4.11.0:
+    resolution: {integrity: sha512-LPk/AkFDGkg7SsbOyL93ojrE6E7lhrxxDwnYNjfmnSeI6BE7Sje6dB24PXgZk8DeugdeXNk1LO+ohRqIjhxiLw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -4000,8 +3994,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.3.6:
-    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -4852,10 +4846,10 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@hookform/resolvers@5.2.2(react-hook-form@7.74.0(react@19.2.5))':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.75.0(react@19.2.5))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.74.0(react@19.2.5)
+      react-hook-form: 7.75.0(react@19.2.5)
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -5987,7 +5981,7 @@ snapshots:
       '@typescript-eslint/types': 8.58.2
       eslint-visitor-keys: 5.0.1
 
-  '@ungap/structured-clone@1.3.0': {}
+  '@ungap/structured-clone@1.3.1': {}
 
   '@vitejs/plugin-react@4.7.0(vite@6.4.2(jiti@1.21.7)(yaml@2.8.3))':
     dependencies:
@@ -6777,7 +6771,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/unist': 3.0.3
-      '@ungap/structured-clone': 1.3.0
+      '@ungap/structured-clone': 1.3.1
       hast-util-from-parse5: 8.0.3
       hast-util-to-parse5: 8.0.1
       html-void-elements: 3.0.0
@@ -7133,7 +7127,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      '@ungap/structured-clone': 1.3.0
+      '@ungap/structured-clone': 1.3.1
       devlop: 1.1.0
       micromark-util-sanitize-uri: 2.0.1
       trim-lines: 3.0.1
@@ -7488,11 +7482,11 @@ snapshots:
 
   pathval@2.0.1: {}
 
-  pd-markdown-ui@1.1.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3)):
+  pd-markdown-ui@1.3.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3)):
     dependencies:
       katex: 0.16.45
       lucide-vue-next: 0.477.0(vue@3.5.32(typescript@5.9.3))
-      pd-shad-ui: 2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
+      pd-shad-ui: 2.1.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3))
       rehype-katex: 7.0.1
       rehype-raw: 7.0.0
       remark-gfm: 4.0.1
@@ -7526,9 +7520,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  pd-shad-ui@2.0.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3)):
+  pd-shad-ui@2.1.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(tailwindcss@3.4.19(yaml@2.8.3))(vue@3.5.32(typescript@5.9.3)):
     dependencies:
-      '@hookform/resolvers': 5.2.2(react-hook-form@7.74.0(react@19.2.5))
+      '@hookform/resolvers': 5.2.2(react-hook-form@7.75.0(react@19.2.5))
       '@internationalized/date': 3.12.1
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@radix-ui/react-alert-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -7567,13 +7561,13 @@ snapshots:
       lucide-vue-next: 0.477.0(vue@3.5.32(typescript@5.9.3))
       radix-vue: 1.9.17(vue@3.5.32(typescript@5.9.3))
       react-day-picker: 9.14.0(react@19.2.5)
-      react-hook-form: 7.74.0(react@19.2.5)
-      react-resizable-panels: 4.10.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react-hook-form: 7.75.0(react@19.2.5)
+      react-resizable-panels: 4.11.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       sonner: 2.0.7(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       tailwind-merge: 3.5.0
       tailwindcss-animate: 1.0.7(tailwindcss@3.4.19(yaml@2.8.3))
       vue-sonner: 2.0.9
-      zod: 4.3.6
+      zod: 4.4.3
     optionalDependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -7685,7 +7679,7 @@ snapshots:
       react: 19.2.5
       scheduler: 0.27.0
 
-  react-hook-form@7.74.0(react@19.2.5):
+  react-hook-form@7.75.0(react@19.2.5):
     dependencies:
       react: 19.2.5
 
@@ -7710,7 +7704,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
-  react-resizable-panels@4.10.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+  react-resizable-panels@4.11.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
     dependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -8317,6 +8311,6 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.3.6: {}
+  zod@4.4.3: {}
 
   zwitch@2.0.4: {}
