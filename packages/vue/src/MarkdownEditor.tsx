@@ -291,6 +291,11 @@ export const MarkdownEditor = defineComponent({
       }
     }
 
+    const destroyEditor = () => {
+      editorRef.value?.destroy();
+      editorRef.value = null;
+    };
+
     const mountEditor = () => {
       if (editorRef.value) return;
       if (!editorContainerRef.value || props.preview === "preview") {
@@ -341,7 +346,7 @@ export const MarkdownEditor = defineComponent({
         }
         latestValue.value = newVal ?? "";
       }
-      if (props.preview === "preview") {
+      if (props.preview !== "edit") {
         updatePreview(newVal ?? "");
       }
     });
@@ -356,6 +361,7 @@ export const MarkdownEditor = defineComponent({
 
     watch(() => props.preview, async (preview) => {
       if (preview === "preview") {
+        destroyEditor();
         updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
         return;
       }
@@ -367,8 +373,7 @@ export const MarkdownEditor = defineComponent({
     });
 
     onUnmounted(() => {
-      editorRef.value?.destroy();
-      editorRef.value = null;
+      destroyEditor();
     });
 
     return () => {

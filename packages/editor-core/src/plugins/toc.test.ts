@@ -31,4 +31,15 @@ describe("tocPlugin", () => {
     const links = [...container.querySelectorAll("a")].map((link) => link.getAttribute("href"));
     expect(links).toEqual(["#same", "#same-1"]);
   });
+
+  it("renders heading text without treating it as HTML", () => {
+    const container = document.createElement("div");
+    const plugin = tocPlugin({ container });
+
+    plugin.install?.(createEditor("# `<img src=x>`"));
+
+    const link = container.querySelector("a");
+    expect(link?.textContent).toBe("<img src=x>");
+    expect(container.querySelector("img")).toBeNull();
+  });
 });
