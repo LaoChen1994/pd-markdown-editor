@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 1.1.4
+
+### Patch Changes
+
+- eee8ecf: Fix toolbar command state rendering and make image upload placeholders unique while exposing upload rejection and error callbacks.
+
 ## 1.1.3
 
 ### Patch Changes
