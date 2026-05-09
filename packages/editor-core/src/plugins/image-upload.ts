@@ -12,10 +12,15 @@ export interface ImageUploadPluginOptions {
   pasteUpload?: boolean;
   /** Enable drag-and-drop upload, default true */
   dragUpload?: boolean;
+  /** Called when a file is rejected before upload */
+  onReject?: (file: File, reason: "type" | "size") => void;
+  /** Called when the upload handler throws */
+  onError?: (error: unknown, file: File) => void;
 }
 
 export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlugin {
-  const { handler, accept = ["image/*"], maxSize, pasteUpload = true, dragUpload = true } = options;
+  const { handler, accept = ["image/*"], maxSize, pasteUpload = true, dragUpload = true, onReject, onError } = options;
+  let uploadId = 0;
 
   function isAccepted(file: File): boolean {
     return accept.some(a => {
@@ -25,10 +30,17 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
   }
 
   async function uploadFile(file: File, editor: MarkdownEditorInstance): Promise<void> {
-    if (!isAccepted(file)) return;
-    if (maxSize && file.size > maxSize) return;
+    if (!isAccepted(file)) {
+      onReject?.(file, "type");
+      return;
+    }
+    if (maxSize && file.size > maxSize) {
+      onReject?.(file, "size");
+      return;
+    }
 
-    const placeholder = `![Uploading ${file.name}...]()`;
+    uploadId += 1;
+    const placeholder = `![Uploading ${file.name}...](pd-editor-upload-${uploadId})`;
     editor.insertAtCursor(placeholder);
 
     try {
@@ -36,7 +48,8 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
       const current = editor.getValue();
       const updated = current.replace(placeholder, `![${file.name}](${url})`);
       editor.setValue(updated);
-    } catch {
+    } catch (error) {
+      onError?.(error, file);
       const current = editor.getValue();
       const updated = current.replace(placeholder, `![Upload failed: ${file.name}]()`);
       editor.setValue(updated);

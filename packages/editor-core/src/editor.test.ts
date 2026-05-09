@@ -248,4 +248,33 @@ describe("MarkdownEditor", () => {
 
     editor.destroy();
   });
+
+  it("updates toolbar button state from the current command state", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "**hello**",
+    });
+    const view = editor.getEditorView();
+    const boldButton = parent.querySelector<HTMLButtonElement>('[title="Bold (Ctrl+B)"]');
+
+    expect(boldButton).not.toBeNull();
+    expect(boldButton?.getAttribute("aria-pressed")).toBe("false");
+
+    view.dispatch({ selection: { anchor: 2, head: 7 } });
+
+    expect(boldButton?.getAttribute("aria-pressed")).toBe("true");
+    expect(boldButton?.disabled).toBe(false);
+
+    editor.setReadOnly(true);
+
+    expect(boldButton?.getAttribute("aria-pressed")).toBe("true");
+    expect(boldButton?.disabled).toBe(true);
+
+    boldButton?.click();
+
+    expect(editor.getValue()).toBe("**hello**");
+
+    editor.destroy();
+  });
 });

@@ -121,7 +121,7 @@ import { imageUploadPlugin, tocPlugin } from 'pd-editor-core';
 <MarkdownEditor 
   plugins={[
     imageUploadPlugin({ 
-      upload: async (file) => 'https://cdn.example.com/' + file.name 
+      handler: async (file) => 'https://cdn.example.com/' + file.name
     }),
     tocPlugin()
   ]}

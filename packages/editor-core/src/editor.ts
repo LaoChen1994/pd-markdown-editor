@@ -24,7 +24,7 @@ import {
   replaceSelection,
   wrapSelection,
 } from "./commands";
-import { getDefaultToolbarItems, createToolbarElement } from "./toolbar";
+import { getDefaultToolbarItems, createToolbarElement, updateToolbarElementState } from "./toolbar";
 import { PluginManager } from "./plugins";
 
 /**
@@ -129,6 +129,9 @@ export class MarkdownEditor implements MarkdownEditorInstance {
           this.pluginManager.notifyUpdate(value, this);
         }, 50);
       }
+      if (update.docChanged || update.selectionSet) {
+        this.updateToolbarState();
+      }
     });
 
     // Create CM6 view
@@ -148,6 +151,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       }),
       parent: editorContainer,
     });
+    this.updateToolbarState();
   }
 
   getValue(): string {
@@ -202,6 +206,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     this.view.dispatch({
       effects: this.readOnlyCompartment.reconfigure(this.createReadOnlyExtension(readOnly)),
     });
+    this.updateToolbarState();
   }
 
   replaceSelection(text: string): void {
@@ -290,7 +295,8 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     });
     const nextToolbar = createToolbarElement(
       [...this.baseToolbarItems, ...pluginItems],
-      (cmd) => this.executeCommand(cmd)
+      (cmd) => this.executeCommand(cmd),
+      (cmd) => this.getCommandState(cmd)
     );
 
     if (this.toolbarEl) {
@@ -299,6 +305,11 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       this.wrapperEl.insertBefore(nextToolbar, this.wrapperEl.firstChild);
     }
     this.toolbarEl = nextToolbar;
+  }
+
+  private updateToolbarState(): void {
+    if (!this.toolbarEl) return;
+    updateToolbarElementState(this.toolbarEl, (cmd) => this.getCommandState(cmd));
   }
 
   private createMarkdownKeymap(): Extension {
