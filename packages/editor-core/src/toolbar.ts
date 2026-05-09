@@ -1,4 +1,4 @@
-import type { ToolbarItem, EditorCommand } from "./types";
+import type { ToolbarItem, EditorCommand, EditorCommandState } from "./types";
 
 /** Default toolbar icon SVGs */
 const ICONS: Record<string, string> = {
@@ -50,7 +50,8 @@ export function getDefaultToolbarItems(): ToolbarItem[] {
 /** Render toolbar DOM element */
 export function createToolbarElement(
   items: ToolbarItem[],
-  onCommand: (command: EditorCommand | string) => void
+  onCommand: (command: EditorCommand | string) => void,
+  getCommandState?: (command: EditorCommand | string) => EditorCommandState
 ): HTMLElement {
   const toolbar = document.createElement("div");
   toolbar.className = "pd-editor-toolbar";
@@ -75,6 +76,7 @@ export function createToolbarElement(
     const btn = document.createElement("button");
     btn.className = "pd-editor-toolbar-btn";
     btn.type = "button";
+    btn.dataset.command = item.command;
     btn.title = item.shortcut ? `${item.label} (${item.shortcut})` : item.label;
     btn.innerHTML = item.icon;
     Object.assign(btn.style, {
@@ -84,12 +86,42 @@ export function createToolbarElement(
       cursor: "pointer", padding: "0", transition: "all 0.15s ease",
     });
 
-    btn.addEventListener("mouseenter", () => { btn.style.backgroundColor = "var(--pd-editor-btn-hover, rgba(0,0,0,0.08))"; });
-    btn.addEventListener("mouseleave", () => { btn.style.backgroundColor = "transparent"; });
-    btn.addEventListener("click", (e) => { e.preventDefault(); onCommand(item.command); });
+    btn.addEventListener("mouseenter", () => {
+      if (!btn.disabled) btn.style.backgroundColor = "var(--pd-editor-btn-hover, rgba(0,0,0,0.08))";
+    });
+    btn.addEventListener("mouseleave", () => {
+      btn.style.backgroundColor = btn.dataset.active === "true" ? "var(--pd-editor-btn-active, rgba(9,105,218,0.14))" : "transparent";
+    });
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!btn.disabled) onCommand(item.command);
+    });
 
     toolbar.appendChild(btn);
   }
 
+  if (getCommandState) {
+    updateToolbarElementState(toolbar, getCommandState);
+  }
+
   return toolbar;
+}
+
+export function updateToolbarElementState(
+  toolbar: HTMLElement,
+  getCommandState: (command: EditorCommand | string) => EditorCommandState
+): void {
+  for (const btn of toolbar.querySelectorAll<HTMLButtonElement>(".pd-editor-toolbar-btn[data-command]")) {
+    const command = btn.dataset.command;
+    if (!command) continue;
+
+    const state = getCommandState(command);
+    btn.disabled = !state.enabled;
+    btn.dataset.active = String(state.active);
+    btn.setAttribute("aria-pressed", String(state.active));
+    btn.style.backgroundColor = state.active ? "var(--pd-editor-btn-active, rgba(9,105,218,0.14))" : "transparent";
+    btn.style.color = state.active ? "var(--pd-editor-icon-active, #0969da)" : "var(--pd-editor-icon, #636c76)";
+    btn.style.cursor = state.enabled ? "pointer" : "not-allowed";
+    btn.style.opacity = state.enabled ? "1" : "0.45";
+  }
 }
