@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 1.2.0
+
+### Minor Changes
+
+- b8d48db: Add core content plugins for code blocks, mermaid diagrams, math expressions, frontmatter metadata, and markdown lint diagnostics.
+
 ## 1.1.4
 
 ### Patch Changes
