@@ -2,6 +2,7 @@ import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
 import { components as mdUiComponents } from "pd-markdown-ui/vue";
+import katex from "katex";
 import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
 import type { Component, PropType, VNode, VNodeChild } from "vue";
 
@@ -39,6 +40,56 @@ const renderVNode = (
   return <Node {...props}>{() => children}</Node> as VNode;
 };
 
+const renderMath = (value: string, displayMode: boolean): string => {
+  try {
+    return katex.renderToString(value, {
+      displayMode,
+      throwOnError: false,
+      strict: false,
+    });
+  } catch {
+    return value;
+  }
+};
+
+const renderTextWithMath = (value: string, keyPrefix: string): VNodeChild[] => {
+  const blockMatch = value.match(/^\s*\$\$([\s\S]+?)\$\$\s*$/);
+  if (blockMatch) {
+    return [
+      <span
+        key={`${keyPrefix}-block`}
+        innerHTML={renderMath(blockMatch[1].trim(), true)}
+      />,
+    ];
+  }
+
+  const parts: VNodeChild[] = [];
+  const mathPattern = /\$([^$\n]+?)\$/g;
+  let lastIndex = 0;
+  let index = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = mathPattern.exec(value)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(value.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <span
+        key={`${keyPrefix}-inline-${index}`}
+        innerHTML={renderMath(match[1].trim(), false)}
+      />
+    );
+    lastIndex = match.index + match[0].length;
+    index += 1;
+  }
+
+  if (lastIndex < value.length) {
+    parts.push(value.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [value];
+};
+
 /**
  * Recursively render an mdast AST node to Vue VNodes
  * using pd-markdown-ui/vue components
@@ -57,6 +108,22 @@ export function renderAstNode(
 
   if (node.type === "text") {
     return node.value ?? "";
+  }
+
+  if (node.type === "paragraph") {
+    const comp = componentMap["p"] as Component | undefined;
+    const children = (node.children ?? []).flatMap((child, i) => {
+      if (child.type === "text") {
+        return renderTextWithMath(child.value ?? "", `${key}-${i}`);
+      }
+      const rendered = renderAstNode(child, componentMap, i);
+      return Array.isArray(rendered) ? rendered : [rendered];
+    }).filter(Boolean) as VNodeChild[];
+
+    if (comp) {
+      return renderVNode(comp, { key }, children);
+    }
+    return renderVNode("p", { key }, children);
   }
 
   // Map mdast node types to component keys

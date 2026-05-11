@@ -22,4 +22,18 @@ describe("Vue markdown UI renderer", () => {
     expect(html).toContain('align="right"');
     expect(html).toContain("task-list-item");
   });
+
+  it("renders inline and block math in the markdown preview", async () => {
+    const ast = createParser().parse("Inline math: $a + b = c$\n\n$$\nE = mc^2\n$$");
+    const rendered = renderAstNode(ast as unknown as Parameters<typeof renderAstNode>[0], components, "root");
+    const app = createSSRApp({
+      render: () => h("div", Array.isArray(rendered) ? rendered : [rendered]),
+    });
+
+    const html = await renderToString(app);
+
+    expect(html).toContain("katex");
+    expect(html).not.toContain("$a + b = c$");
+    expect(html).not.toContain("$$");
+  });
 });

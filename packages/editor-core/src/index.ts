@@ -39,7 +39,17 @@ export { createDefaultExtensions } from "./extensions/default";
 
 // Plugins
 export { PluginManager } from "./plugins";
+export { codeHighlightPlugin, extractCodeBlocks } from "./plugins/code-highlight";
+export type { CodeBlockInfo, CodeHighlightPluginOptions } from "./plugins/code-highlight";
+export { frontmatterPlugin, parseFrontmatter } from "./plugins/frontmatter";
+export type { FrontmatterPluginOptions, FrontmatterResult, FrontmatterValue } from "./plugins/frontmatter";
 export { imageUploadPlugin } from "./plugins/image-upload";
 export type { ImageUploadPluginOptions } from "./plugins/image-upload";
+export { markdownLintPlugin, lintMarkdown } from "./plugins/markdown-lint";
+export type { MarkdownDiagnostic, MarkdownLintPluginOptions, MarkdownLintRule } from "./plugins/markdown-lint";
+export { mathPlugin, extractMathExpressions } from "./plugins/math";
+export type { MathExpression, MathPluginOptions } from "./plugins/math";
+export { mermaidPlugin, extractMermaidDiagrams, createMermaidElement } from "./plugins/mermaid";
+export type { MermaidDiagram, MermaidPluginOptions } from "./plugins/mermaid";
 export { tocPlugin } from "./plugins/toc";
 export type { TocPluginOptions, TocItem } from "./plugins/toc";
