@@ -1,5 +1,16 @@
 # pd-editor-vue
 
+## 1.2.0
+
+### Minor Changes
+
+- b8d48db: Add core content plugins for code blocks, mermaid diagrams, math expressions, frontmatter metadata, and markdown lint diagnostics.
+
+### Patch Changes
+
+- Updated dependencies [b8d48db]
+  - pd-editor-core@1.2.0
+
 ## 1.1.4
 
 ### Patch Changes
