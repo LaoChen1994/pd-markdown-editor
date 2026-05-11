@@ -38,6 +38,9 @@ importers:
 
   examples/react-demo:
     dependencies:
+      katex:
+        specifier: ^0.16.45
+        version: 0.16.45
       pd-editor-core:
         specifier: workspace:*
         version: link:../../packages/editor-core
@@ -69,6 +72,9 @@ importers:
 
   examples/vue-demo:
     dependencies:
+      katex:
+        specifier: ^0.16.45
+        version: 0.16.45
       pd-editor-core:
         specifier: workspace:*
         version: link:../../packages/editor-core

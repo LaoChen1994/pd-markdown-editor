@@ -12,7 +12,7 @@ A high-performance, modular, and framework-agnostic Markdown editor monorepo. Po
 
 - 🚀 **Framework Agnostic Core**: Lightweight editor engine built on CodeMirror 6.
 - ⚛️ **Modern Adapters**: Official support for **React** and **Vue 3**.
-- 🛠️ **Plugin System**: Easily extend functionality (Image Upload, TOC, custom syntax).
+- 🛠️ **Plugin System**: Built-in plugins for uploads, TOC, code blocks, Mermaid, math, frontmatter, and lint diagnostics.
 - 🌓 **Themes**: Beautiful GitHub-inspired Light and Dark modes.
 - 📊 **Split-View**: Real-time side-by-side preview with synchronized scrolling support.
 - ⌨️ **Keyboard Shortcuts**: Rich set of standard Markdown formatting shortcuts.
@@ -24,11 +24,13 @@ A high-performance, modular, and framework-agnostic Markdown editor monorepo. Po
 
 | Package | Version | Description |
 |---|---|---|
-| [`pd-markdown`](https://www.npmjs.com/package/pd-markdown) | `2.x` | External Markdown parser & renderer. |
-| [`pd-markdown-ui`](https://www.npmjs.com/package/pd-markdown-ui) | `1.x` | External Markdown preview UI primitives. |
 | [`pd-editor-core`](./packages/editor-core) | `1.x` | Framework-agnostic editor engine. |
 | [`pd-editor-react`](./packages/react) | `1.x` | React adapter & hooks. |
 | [`pd-editor-vue`](./packages/vue) | `1.x` | Vue 3 adapter & composables. |
+| [`examples/react-demo`](./examples/react-demo) | private | React demo app. |
+| [`examples/vue-demo`](./examples/vue-demo) | private | Vue 3 demo app. |
+
+External runtime dependencies include [`pd-markdown`](https://www.npmjs.com/package/pd-markdown) for parsing/rendering and [`pd-markdown-ui`](https://www.npmjs.com/package/pd-markdown-ui) for preview UI primitives; they are not packages in this monorepo.
 
 ---
 
@@ -112,21 +114,51 @@ const editor = new MarkdownEditor({
 
 - **Image Upload**: Supports paste and drag-and-drop.
 - **TOC**: Generates a live Table of Contents sidebar.
+- **Code Highlight**: Extracts fenced code blocks and language class metadata.
+- **Mermaid**: Extracts Mermaid fenced code blocks and creates safe diagram container elements.
+- **Math**: Extracts inline `$...$` and block `$$...$$` expressions.
+- **Frontmatter**: Parses top-level YAML frontmatter into metadata and body content.
+- **Markdown Lint**: Reports diagnostics for missing image alt text, empty links, heading jumps, and duplicate headings.
 
 ```ts
 import { MarkdownEditor } from 'pd-editor-react'; // or vue/core
-import { imageUploadPlugin, tocPlugin } from 'pd-editor-core';
+import {
+  codeHighlightPlugin,
+  frontmatterPlugin,
+  imageUploadPlugin,
+  markdownLintPlugin,
+  mathPlugin,
+  mermaidPlugin,
+  tocPlugin,
+} from 'pd-editor-core';
 
 // ... in your component
 <MarkdownEditor 
   plugins={[
+    tocPlugin(),
+    codeHighlightPlugin({
+      onCodeBlocks: (blocks) => console.log(blocks),
+    }),
+    mermaidPlugin({
+      onDiagrams: (diagrams) => console.log(diagrams),
+    }),
+    mathPlugin({
+      onExpressions: (expressions) => console.log(expressions),
+    }),
+    frontmatterPlugin({
+      onFrontmatter: (frontmatter) => console.log(frontmatter.data),
+    }),
+    markdownLintPlugin({
+      onDiagnostics: (diagnostics) => console.log(diagnostics),
+    }),
     imageUploadPlugin({ 
       handler: async (file) => 'https://cdn.example.com/' + file.name
     }),
-    tocPlugin()
   ]}
 />
 ```
+
+The content plugins above are core analysis plugins: they parse editor content and report structured results through callbacks. They do not bundle heavy renderers such as Mermaid or KaTeX; applications can use the callback data to render diagrams, math, warnings, or metadata in React, Vue, or any other UI layer.
 
 Runtime plugins can also be installed and removed after the editor is mounted:
 

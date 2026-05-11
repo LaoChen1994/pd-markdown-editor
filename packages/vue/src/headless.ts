@@ -4,9 +4,37 @@ export type { UseMarkdownEditorOptions, UseMarkdownEditorReturn } from "./useMar
 export { Toolbar } from "./Toolbar";
 
 // Re-export useful types from core
-export type { EditorCommand, EditorPlugin, ToolbarItem } from "pd-editor-core";
-export { imageUploadPlugin, tocPlugin } from "pd-editor-core";
+export type {
+  CodeBlockInfo,
+  CodeHighlightPluginOptions,
+  EditorCommand,
+  EditorPlugin,
+  FrontmatterPluginOptions,
+  FrontmatterResult,
+  MarkdownDiagnostic,
+  MarkdownLintPluginOptions,
+  MarkdownLintRule,
+  MathExpression,
+  MathPluginOptions,
+  MermaidDiagram,
+  MermaidPluginOptions,
+  ToolbarItem,
+} from "pd-editor-core";
+export {
+  codeHighlightPlugin,
+  createMermaidElement,
+  extractCodeBlocks,
+  extractMathExpressions,
+  extractMermaidDiagrams,
+  frontmatterPlugin,
+  imageUploadPlugin,
+  lintMarkdown,
+  markdownLintPlugin,
+  mathPlugin,
+  mermaidPlugin,
+  parseFrontmatter,
+  tocPlugin,
+} from "pd-editor-core";
 
 // Re-export pd-markdown-ui/vue components for custom rendering
 export { components as markdownUiComponents } from "pd-markdown-ui/vue";
-

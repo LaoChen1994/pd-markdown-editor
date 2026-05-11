@@ -9,8 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "pd-editor-react": "workspace:*",
+    "katex": "^0.16.45",
     "pd-editor-core": "workspace:*",
+    "pd-editor-react": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

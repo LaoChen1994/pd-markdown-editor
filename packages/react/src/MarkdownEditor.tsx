@@ -2,9 +2,65 @@ import React, { useRef, useEffect, useState } from "react";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { MarkdownRenderer } from "pd-markdown/web";
 import { components as mdUiComponents } from "pd-markdown-ui";
+import katex from "katex";
 
 import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
 import type { ComponentMap } from "pd-markdown/web";
+
+const renderMath = (value: string, displayMode: boolean): string => {
+  try {
+    return katex.renderToString(value, {
+      displayMode,
+      throwOnError: false,
+      strict: false,
+    });
+  } catch {
+    return value;
+  }
+};
+
+const renderTextWithMath = (value: string, keyPrefix: string): React.ReactNode[] => {
+  const blockMatch = value.match(/^\s*\$\$([\s\S]+?)\$\$\s*$/);
+  if (blockMatch) {
+    return [
+      React.createElement("span", {
+        key: `${keyPrefix}-block`,
+        dangerouslySetInnerHTML: { __html: renderMath(blockMatch[1].trim(), true) },
+      }),
+    ];
+  }
+
+  const parts: React.ReactNode[] = [];
+  const mathPattern = /\$([^$\n]+?)\$/g;
+  let lastIndex = 0;
+  let index = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = mathPattern.exec(value)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(value.slice(lastIndex, match.index));
+    }
+    parts.push(
+      React.createElement("span", {
+        key: `${keyPrefix}-inline-${index}`,
+        dangerouslySetInnerHTML: { __html: renderMath(match[1].trim(), false) },
+      })
+    );
+    lastIndex = match.index + match[0].length;
+    index += 1;
+  }
+
+  if (lastIndex < value.length) {
+    parts.push(value.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [value];
+};
+
+const renderChildrenWithMath = (children: React.ReactNode): React.ReactNode[] =>
+  React.Children.toArray(children).flatMap((child, index) => (
+    typeof child === "string" ? renderTextWithMath(child, `math-${index}`) : [child]
+  ));
 
 export const markdownUiComponentMap: Partial<ComponentMap> = {
   heading: ({ node, children }) => {
@@ -14,7 +70,9 @@ export const markdownUiComponentMap: Partial<ComponentMap> = {
     const id = typeof data?.id === "string" ? data.id : undefined;
     return React.createElement(Heading as React.ElementType, { id }, children);
   },
-  paragraph: ({ children }) => React.createElement(mdUiComponents.p as React.ElementType, null, children),
+  paragraph: ({ children }) => (
+    React.createElement(mdUiComponents.p as React.ElementType, null, renderChildrenWithMath(children))
+  ),
   list: ({ node, children }) => {
     const List = node.ordered ? mdUiComponents.ol : mdUiComponents.ul;
     const start = node.ordered && node.start != null && node.start !== 1 ? node.start : undefined;
