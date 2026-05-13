@@ -1,5 +1,13 @@
 # pd-editor-vue
 
+## 1.2.1
+
+### Patch Changes
+
+- b066813: Fix npm package repository, homepage, and issue tracker URLs.
+- Updated dependencies [b066813]
+  - pd-editor-core@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes
