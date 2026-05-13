@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 1.2.1
+
+### Patch Changes
+
+- b066813: Fix npm package repository, homepage, and issue tracker URLs.
+
 ## 1.2.0
 
 ### Minor Changes

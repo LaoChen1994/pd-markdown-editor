@@ -1,5 +1,13 @@
 # vue-demo
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [b066813]
+  - pd-editor-core@1.2.1
+  - pd-editor-vue@1.2.1
+
 ## 0.0.5
 
 ### Patch Changes
