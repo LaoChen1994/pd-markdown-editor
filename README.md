@@ -1,7 +1,7 @@
 # 📝 pd-markdown-editor
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/pidan/pd-markdown-editor)
-[![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/pidan/pd-markdown-editor)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/LaoChen1994/pd-markdown-editor)
+[![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/LaoChen1994/pd-markdown-editor)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
 A high-performance, modular, and framework-agnostic Markdown editor monorepo. Powered by **CodeMirror 6**, designed for extensibility and premium user experience.
