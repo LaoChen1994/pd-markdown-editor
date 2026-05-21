@@ -17,29 +17,46 @@ import type {
   MathExpression,
   MermaidDiagram,
 } from "pd-editor-react";
+import "./App.css";
 
 const INITIAL_MD = `---
-title: Plugin demo
+title: pd-editor launch note
 published: true
-order: 1
+adapter: React
+version: 1.2
 ---
 
-# Welcome to pd-editor
+# Ship Markdown workflows faster
 
-This demo shows the core content plugins working through editor callbacks.
+pd-editor combines a CodeMirror-powered writing surface with framework adapters for React and Vue. The same core engine handles shortcuts, preview state, plugins, and Markdown-aware typing.
 
-## Code Example
+## Editing flow
 
-\`\`\`typescript
+- Continue list, quote, and task blocks with Enter.
+- Switch between edit, split, and preview modes.
+- Use plugins to inspect the document while people write.
+
+## Code example
+
+\`\`\`tsx
 import { MarkdownEditor, markdownLintPlugin } from "pd-editor-react";
+
+<MarkdownEditor
+  value={content}
+  onChange={setContent}
+  preview="split"
+  plugins={[markdownLintPlugin({ onDiagnostics: setDiagnostics })]}
+/>;
 \`\`\`
 
-## Mermaid Diagram
+## Mermaid diagram
 
 \`\`\`mermaid
 graph TD
-  Editor --> Plugin
-  Plugin --> Diagnostics
+  Writer --> Editor
+  Editor --> Plugins
+  Plugins --> Preview
+  Plugins --> Diagnostics
 \`\`\`
 
 ## Math
@@ -50,29 +67,13 @@ $$
 E = mc^2
 $$
 
-## Lint Examples
+## Lint examples
 
 ![](missing-alt.png)
 []()
 
 ### Skipped heading level
 `;
-
-const panelStyle = (isDark: boolean): React.CSSProperties => ({
-  border: `1px solid ${isDark ? "#30363d" : "#d1d9e0"}`,
-  borderRadius: 8,
-  padding: 16,
-  backgroundColor: isDark ? "#161b22" : "#ffffff",
-  color: isDark ? "#e6edf3" : "#1f2328",
-});
-
-const labelStyle = (isDark: boolean): React.CSSProperties => ({
-  margin: "0 0 8px",
-  fontSize: 13,
-  fontWeight: 700,
-  color: isDark ? "#8b949e" : "#57606a",
-  textTransform: "uppercase",
-});
 
 const renderMath = (value: string, displayMode: boolean): string => {
   try {
@@ -86,7 +87,7 @@ const renderMath = (value: string, displayMode: boolean): string => {
   }
 };
 
-function App() {
+const App = () => {
   const [content, setContent] = useState(INITIAL_MD);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [preview, setPreview] = useState<"edit" | "preview" | "split">("split");
@@ -95,7 +96,6 @@ function App() {
   const [mathExpressions, setMathExpressions] = useState<MathExpression[]>([]);
   const [frontmatter, setFrontmatter] = useState<FrontmatterResult | null>(null);
   const [diagnostics, setDiagnostics] = useState<MarkdownDiagnostic[]>([]);
-  const isDark = theme === "dark";
 
   const plugins = useMemo(() => [
     tocPlugin(),
@@ -110,142 +110,126 @@ function App() {
   ], []);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      backgroundColor: isDark ? "#0d1117" : "#f0f2f5",
-      padding: "24px",
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      transition: "background-color 0.3s ease",
-    }}>
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          gap: 16,
-        }}>
-          <h1 style={{
-            fontSize: 24,
-            fontWeight: 700,
-            color: isDark ? "#e6edf3" : "#1f2328",
-            margin: 0,
-          }}>
-            pd-editor React Demo
-          </h1>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              onClick={() => setTheme(t => t === "light" ? "dark" : "light")}
-              style={{
-                padding: "6px 16px",
-                borderRadius: 6,
-                border: `1px solid ${isDark ? "#30363d" : "#d1d9e0"}`,
-                backgroundColor: isDark ? "#21262d" : "#ffffff",
-                color: isDark ? "#e6edf3" : "#1f2328",
-                cursor: "pointer",
-                fontSize: 14,
-              }}
-            >
-              {theme === "light" ? "Dark" : "Light"}
-            </button>
-
-            {(["edit", "split", "preview"] as const).map(mode => (
-              <button
-                key={mode}
-                onClick={() => setPreview(mode)}
-                style={{
-                  padding: "6px 16px",
-                  borderRadius: 6,
-                  border: `1px solid ${isDark ? "#30363d" : "#d1d9e0"}`,
-                  backgroundColor: preview === mode
-                    ? (isDark ? "#58a6ff" : "#0969da")
-                    : (isDark ? "#21262d" : "#ffffff"),
-                  color: preview === mode
-                    ? "#ffffff"
-                    : (isDark ? "#e6edf3" : "#1f2328"),
-                  cursor: "pointer",
-                  fontSize: 14,
-                  textTransform: "capitalize",
-                }}
-              >
-                {mode}
-              </button>
-            ))}
+    <main className="demo-shell" data-theme={theme}>
+      <section className="demo-hero" aria-labelledby="demo-title">
+        <div className="demo-hero-copy">
+          <p className="demo-kicker">pd-markdown-editor</p>
+          <h1 id="demo-title">A Markdown editor demo that stays editable.</h1>
+          <p className="demo-lede">
+            Try the React adapter with split preview, plugin diagnostics, frontmatter parsing, math extraction, and Mermaid detection in one page.
+          </p>
+          <div className="demo-links" aria-label="Project links">
+            <a href="https://github.com/LaoChen1994/pd-markdown-editor">GitHub</a>
+            <a href="https://www.npmjs.com/package/pd-editor-react">npm package</a>
           </div>
         </div>
 
+        <div className="demo-controls" aria-label="Editor controls">
+          <button type="button" onClick={() => setTheme((value) => value === "light" ? "dark" : "light")}>
+            {theme === "light" ? "Dark" : "Light"}
+          </button>
+          {(["edit", "split", "preview"] as const).map((mode) => (
+            <button
+              type="button"
+              key={mode}
+              aria-pressed={preview === mode}
+              onClick={() => setPreview(mode)}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="demo-workbench" aria-label="Markdown editor playground">
         <MarkdownEditor
           value={content}
           onChange={setContent}
-          onSave={(v) => alert("Saved! Length: " + v.length)}
+          onSave={(value) => window.alert("Saved draft length: " + value.length)}
           theme={theme}
           preview={preview}
-          height={620}
+          height="clamp(520px, 62vh, 720px)"
           placeholder="Start writing Markdown..."
           plugins={plugins}
           renderComponentMap={{
             blockquote: ({ children }) => (
-              <blockquote style={{ borderLeft: "4px solid #0969da", paddingLeft: 16 }}>
+              <blockquote className="demo-blockquote">
                 {children}
               </blockquote>
             ),
           }}
         />
+      </section>
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 12,
-          marginTop: 16,
-        }}>
-          <section style={panelStyle(isDark)}>
-            <h2 style={labelStyle(isDark)}>Frontmatter</h2>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{JSON.stringify(frontmatter?.data ?? {}, null, 2)}</pre>
-          </section>
+      <section className="demo-inspector" aria-label="Plugin output">
+        <article className="demo-panel demo-panel-wide">
+          <div className="demo-panel-header">
+            <h2>Frontmatter</h2>
+            <span>{Object.keys(frontmatter?.data ?? {}).length} fields</span>
+          </div>
+          <pre>{JSON.stringify(frontmatter?.data ?? {}, null, 2)}</pre>
+        </article>
 
-          <section style={panelStyle(isDark)}>
-            <h2 style={labelStyle(isDark)}>Code Blocks</h2>
-            <p style={{ margin: 0 }}>{codeBlocks.map((block) => block.language).join(", ") || "None"}</p>
-          </section>
+        <article className="demo-panel">
+          <div className="demo-panel-header">
+            <h2>Code Blocks</h2>
+            <span>{codeBlocks.length}</span>
+          </div>
+          <p>{codeBlocks.map((block) => block.language || "plain").join(", ") || "None"}</p>
+        </article>
 
-          <section style={panelStyle(isDark)}>
-            <h2 style={labelStyle(isDark)}>Mermaid</h2>
-            <p style={{ margin: 0 }}>{diagrams.map((diagram) => diagram.id).join(", ") || "None"}</p>
-          </section>
+        <article className="demo-panel">
+          <div className="demo-panel-header">
+            <h2>Mermaid</h2>
+            <span>{diagrams.length}</span>
+          </div>
+          <p>{diagrams.map((diagram) => diagram.id).join(", ") || "None"}</p>
+        </article>
 
-          <section style={panelStyle(isDark)}>
-            <h2 style={labelStyle(isDark)}>Math</h2>
-            {mathExpressions.length === 0 ? (
-              <p style={{ margin: 0 }}>None</p>
-            ) : (
-              <div style={{ display: "grid", gap: 10 }}>
-                {mathExpressions.map((expression, index) => (
-                  <div key={`${expression.type}-${index}`}>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: renderMath(expression.value, expression.type === "block"),
-                      }}
-                    />
-                    <code style={{ fontSize: 12 }}>{expression.raw}</code>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+        <article className="demo-panel demo-panel-wide">
+          <div className="demo-panel-header">
+            <h2>Math</h2>
+            <span>{mathExpressions.length}</span>
+          </div>
+          {mathExpressions.length === 0 ? (
+            <p>None</p>
+          ) : (
+            <div className="demo-math-list">
+              {mathExpressions.map((expression, index) => (
+                <div key={`${expression.type}-${index}`} className="demo-math-item">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: renderMath(expression.value, expression.type === "block"),
+                    }}
+                  />
+                  <code>{expression.raw}</code>
+                </div>
+              ))}
+            </div>
+          )}
+        </article>
 
-          <section style={panelStyle(isDark)}>
-            <h2 style={labelStyle(isDark)}>Lint Diagnostics</h2>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
+        <article className="demo-panel demo-panel-wide">
+          <div className="demo-panel-header">
+            <h2>Lint Diagnostics</h2>
+            <span>{diagnostics.length}</span>
+          </div>
+          {diagnostics.length === 0 ? (
+            <p>None</p>
+          ) : (
+            <ul className="demo-diagnostics">
               {diagnostics.map((diagnostic, index) => (
-                <li key={`${diagnostic.rule}-${index}`}>{diagnostic.rule}: {diagnostic.message}</li>
+                <li key={`${diagnostic.rule}-${index}`}>
+                  <strong>{diagnostic.rule}</strong>
+                  <span>{diagnostic.message}</span>
+                </li>
               ))}
             </ul>
-          </section>
-        </div>
-      </div>
-    </div>
+          )}
+        </article>
+      </section>
+    </main>
   );
-}
+};
 
 export default App;

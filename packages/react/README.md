@@ -1,6 +1,7 @@
 # pd-editor-react
 
 [![npm](https://img.shields.io/npm/v/pd-editor-react?color=06b6d4&label=npm)](https://www.npmjs.com/package/pd-editor-react)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
 [![React](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
@@ -8,6 +9,8 @@
 A polished React Markdown editor with **CodeMirror 6**, live preview, `pd-markdown-ui` typography, image upload, TOC, toolbar commands, and TypeScript-first APIs.
 
 Designed for product docs, CMS editors, AI writing tools, admin dashboards, developer portals, note-taking apps, and any React interface that needs a serious Markdown editing experience without building the editor stack from scratch.
+
+Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
 
 ## Highlights
 
