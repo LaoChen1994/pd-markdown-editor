@@ -1,10 +1,13 @@
 # 📝 pd-markdown-editor
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/LaoChen1994/pd-markdown-editor)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
 [![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/LaoChen1994/pd-markdown-editor)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
 A high-performance, modular, and framework-agnostic Markdown editor monorepo. Powered by **CodeMirror 6**, designed for extensibility and premium user experience.
+
+Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
 
 ---
 
@@ -203,6 +206,11 @@ pnpm build
 # Run demos
 pnpm --filter react-demo dev
 pnpm --filter vue-demo dev
+
+# Build the GitHub Pages demo
+pnpm --filter pd-editor-core build
+pnpm --filter pd-editor-react build
+pnpm --filter react-demo build
 
 # Linting
 pnpm lint

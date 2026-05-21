@@ -1,6 +1,7 @@
 # pd-editor-vue
 
 [![npm](https://img.shields.io/npm/v/pd-editor-vue?color=42b883&label=npm)](https://www.npmjs.com/package/pd-editor-vue)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42b883)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
@@ -8,6 +9,8 @@
 A Vue 3 Markdown editor built on **CodeMirror 6**, with live preview, `pd-markdown-ui` typography, image upload, TOC, toolbar commands, and a composable API for custom editor shells.
 
 Use it when you need a production-ready Markdown field without hand-assembling parser, preview, styling, shortcuts, plugins, and CodeMirror integration yourself.
+
+Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
 
 ## Highlights
 

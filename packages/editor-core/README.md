@@ -1,6 +1,7 @@
 # pd-editor-core
 
 [![npm](https://img.shields.io/npm/v/pd-editor-core?color=0ea5e9&label=npm)](https://www.npmjs.com/package/pd-editor-core)
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](https://www.typescriptlang.org/)
 [![CodeMirror 6](https://img.shields.io/badge/CodeMirror-6-111827)](https://codemirror.net/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
@@ -9,6 +10,8 @@ Framework-agnostic Markdown editor engine powered by **CodeMirror 6**.
 Use it directly in vanilla JavaScript, or as the foundation for `pd-editor-react` and `pd-editor-vue`.
 
 `pd-editor-core` focuses on the hard editor work: selection-safe Markdown commands, polished typing flow, plugin lifecycle, image upload, TOC, themes, toolbar state, and CodeMirror extension interop.
+
+Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
 
 ## Why It Feels Good
 
