@@ -271,6 +271,8 @@ const renderComponentMap = {
 
 Common keys include `h1`, `h2`, `h3`, `p`, `ul`, `ol`, `li`, `blockquote`, `table`, `thead`, `tbody`, `tr`, `th`, `td`, `pre`, and `code`.
 
+Raw HTML Markdown nodes are not rendered by the default preview. If your application needs embedded HTML, sanitize it before rendering it through a custom preview pipeline.
+
 ## Composable API
 
 Use `useMarkdownEditor` when you want to build your own Vue shell around the core editor:
@@ -296,7 +298,7 @@ const logValue = () => {
 </template>
 ```
 
-Initialization options are read when the editor mounts. Recreate the composable owner if you need to change structural options such as plugins or extensions.
+Initialization options are read when the editor mounts. Structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, and `extensions` are not rebuilt automatically. Recreate the composable owner when those structural options need to change.
 
 ## SSR / Nuxt
 

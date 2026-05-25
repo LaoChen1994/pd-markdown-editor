@@ -6,9 +6,12 @@ import {
   continueMarkdownBlock,
   executeEditorCommand,
   getEditorCommandState,
+  getSelection,
   indentMarkdownBlock,
+  insertAtCursor,
   isEditorCommandActive,
   outdentMarkdownBlock,
+  replaceSelection,
   wrapSelection,
 } from "./commands";
 
@@ -31,6 +34,29 @@ describe("editor commands", () => {
     executeEditorCommand(view, "bold");
 
     expect(view.state.doc.toString()).toBe("**hello**");
+    view.destroy();
+  });
+
+  it("leaves the document unchanged for unknown commands", () => {
+    const view = createView("hello", 0, 5);
+
+    expect(executeEditorCommand(view, "unknown")).toBe(false);
+
+    expect(view.state.doc.toString()).toBe("hello");
+    expect(view.state.selection.main.from).toBe(0);
+    expect(view.state.selection.main.to).toBe(5);
+    view.destroy();
+  });
+
+  it("replaces selection, inserts at cursor, and reads selected text", () => {
+    const view = createView("hello world", 6, 11);
+
+    expect(getSelection(view)).toBe("world");
+    replaceSelection(view, "there");
+    expect(view.state.doc.toString()).toBe("hello there");
+
+    insertAtCursor(view, "!");
+    expect(view.state.doc.toString()).toBe("hello there!");
     view.destroy();
   });
 

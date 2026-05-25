@@ -169,7 +169,12 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   const editorRef = useRef<CoreEditor | null>(null);
   const isControlled = value !== undefined;
   const latestValueRef = useRef(isControlled ? (value ?? "") : defaultValue);
+  const onChangeRef = useRef(onChange);
+  const onSaveRef = useRef(onSave);
   const [previewContent, setPreviewContent] = useState("");
+
+  onChangeRef.current = onChange;
+  onSaveRef.current = onSave;
 
   // Merge pd-markdown-ui components with user overrides
   const mergedComponents = React.useMemo(
@@ -188,12 +193,12 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       theme,
       onChange: (v) => {
         latestValueRef.current = v;
-        onChange?.(v);
+        onChangeRef.current?.(v);
         if (preview === "split") {
           setPreviewContent(v);
         }
       },
-      onSave,
+      onSave: (v) => onSaveRef.current?.(v),
       placeholder,
       readOnly,
       extensions,
@@ -229,11 +234,14 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
     if (isControlled && editorRef.current) {
       const current = editorRef.current.getValue();
       if (current !== value) {
-        editorRef.current.setValue(value ?? "");
+        editorRef.current.setValue(value ?? "", { emitChange: false });
       }
       latestValueRef.current = value ?? "";
+      if (preview === "split") {
+        setPreviewContent(value ?? "");
+      }
     }
-  }, [value, isControlled]);
+  }, [value, isControlled, preview]);
 
   // Preview-only mode
   useEffect(() => {

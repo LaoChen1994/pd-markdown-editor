@@ -59,6 +59,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
   private initialValue: string;
+  private suppressNextChange = false;
 
   constructor(options: MarkdownEditorOptions) {
     const {
@@ -123,11 +124,15 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         const value = update.state.doc.toString();
-        if (this.updateTimer) clearTimeout(this.updateTimer);
-        this.updateTimer = setTimeout(() => {
-          this.onChange?.(value);
-          this.pluginManager.notifyUpdate(value, this);
-        }, 50);
+        if (this.suppressNextChange) {
+          this.suppressNextChange = false;
+        } else {
+          if (this.updateTimer) clearTimeout(this.updateTimer);
+          this.updateTimer = setTimeout(() => {
+            this.onChange?.(value);
+            this.pluginManager.notifyUpdate(value, this);
+          }, 50);
+        }
       }
       if (update.docChanged || update.selectionSet) {
         this.updateToolbarState();
@@ -158,8 +163,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     return this.view?.state.doc.toString() ?? this.initialValue;
   }
 
-  setValue(value: string): void {
+  setValue(value: string, options?: { emitChange?: boolean }): void {
     if (!this.view) return;
+    if (this.view.state.doc.toString() === value) return;
+    this.suppressNextChange = options?.emitChange === false;
     this.view.dispatch({
       changes: { from: 0, to: this.view.state.doc.length, insert: value },
     });
