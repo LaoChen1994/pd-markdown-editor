@@ -170,6 +170,8 @@ editor.use(tocPlugin());
 editor.unuse('toc');
 ```
 
+The React and Vue preview adapters do not render raw HTML Markdown nodes by default. If your application needs embedded HTML, sanitize it before rendering it through a custom preview pipeline.
+
 ## ⌨️ Editing Experience
 
 The core editor includes Markdown-aware typing behavior:
@@ -199,6 +201,12 @@ pnpm install
 
 # Full CI gate
 pnpm run ci
+
+# Unit tests
+pnpm test
+
+# Type checking
+pnpm typecheck
 
 # Build all packages
 pnpm build

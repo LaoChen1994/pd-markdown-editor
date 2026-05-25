@@ -266,6 +266,8 @@ const renderComponentMap: Partial<ComponentMap> = {
 
 Common keys include `heading`, `paragraph`, `list`, `listItem`, `table`, `tableRow`, `tableCell`, `code`, `inlineCode`, and `blockquote`.
 
+Raw HTML Markdown nodes are not rendered by the default preview. If your application needs embedded HTML, sanitize it before rendering it through a custom preview pipeline.
+
 ## Hook API
 
 Use `useMarkdownEditor` when you want to build a completely custom shell around the core editor:
@@ -293,7 +295,7 @@ export const CustomShell = () => {
 };
 ```
 
-Initialization options are read when the editor mounts. Recreate the hook owner if you need to change structural options such as plugins or extensions.
+Initialization options are read when the editor mounts. `theme` and `readOnly` are synchronized after mount; structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, and `extensions` are not rebuilt automatically. Recreate the hook owner when those structural options need to change.
 
 ## SSR / Next.js
 
@@ -321,7 +323,7 @@ Make sure Tailwind scans `pd-shad-ui` and `pd-markdown-ui` in `node_modules`, be
 
 ### Can I use it as a controlled component?
 
-Yes. Pass `value` and `onChange`. For one-time initial content, use `defaultValue`.
+Yes. Pass `value` and `onChange`. External `value` updates are synchronized into the editor without calling `onChange` again. For one-time initial content, use `defaultValue`.
 
 ### Can I hide preview or toolbar?
 

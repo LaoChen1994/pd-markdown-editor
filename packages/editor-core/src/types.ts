@@ -55,7 +55,7 @@ export interface ToolbarContext {
 /** Minimal editor instance interface for plugins */
 export interface MarkdownEditorInstance {
   getValue(): string;
-  setValue(value: string): void;
+  setValue(value: string, options?: { emitChange?: boolean }): void;
   focus(): void;
   executeCommand(command: EditorCommand | string): void;
   canExecute(command: EditorCommand | string): boolean;

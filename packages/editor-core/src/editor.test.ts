@@ -39,6 +39,61 @@ describe("MarkdownEditor", () => {
     editor.destroy();
   });
 
+  it("can update the document without notifying change subscribers", async () => {
+    const parent = document.createElement("div");
+    const updates: string[] = [];
+    let pluginUpdates = 0;
+    const plugin: EditorPlugin = {
+      name: "counter",
+      onUpdate: () => {
+        pluginUpdates += 1;
+      },
+    };
+
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "hello",
+      onChange: (value) => updates.push(value),
+      plugins: [plugin],
+      toolbar: false,
+    });
+
+    editor.setValue("external", { emitChange: false });
+    await waitForUpdate();
+
+    expect(editor.getValue()).toBe("external");
+    expect(updates).toEqual([]);
+    expect(pluginUpdates).toBe(0);
+
+    editor.setValue("user");
+    await waitForUpdate();
+
+    expect(updates).toEqual(["user"]);
+    expect(pluginUpdates).toBe(1);
+
+    editor.destroy();
+  });
+
+  it("does not let a silent no-op update suppress the next document change", async () => {
+    const parent = document.createElement("div");
+    const updates: string[] = [];
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "hello",
+      onChange: (value) => updates.push(value),
+      toolbar: false,
+    });
+
+    editor.setValue("external", { emitChange: false });
+    editor.setValue("external", { emitChange: false });
+    editor.setValue("user");
+    await waitForUpdate();
+
+    expect(updates).toEqual(["user"]);
+
+    editor.destroy();
+  });
+
   it("lets plugins read the initial value during install", () => {
     const parent = document.createElement("div");
     let installedValue = "";

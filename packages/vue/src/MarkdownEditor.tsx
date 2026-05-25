@@ -289,7 +289,7 @@ export function renderAstNode(
 
   // HTML
   if (node.type === "html") {
-    return <div key={key} innerHTML={node.value ?? ""} />;
+    return null;
   }
 
   // Thematic break
@@ -404,9 +404,12 @@ export const MarkdownEditor = defineComponent({
       if (isControlled.value && editorRef.value) {
         const current = editorRef.value.getValue();
         if (current !== newVal) {
-          editorRef.value.setValue(newVal ?? "");
+          editorRef.value.setValue(newVal ?? "", { emitChange: false });
         }
         latestValue.value = newVal ?? "";
+      }
+      if (props.preview === "split") {
+        updatePreview(newVal ?? "");
       }
       if (props.preview === "preview") {
         updatePreview(newVal ?? "");

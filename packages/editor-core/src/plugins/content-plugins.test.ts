@@ -84,6 +84,12 @@ describe("content plugins", () => {
     ]);
   });
 
+  it("does not report unfinished or disabled math expressions", () => {
+    expect(extractMathExpressions("unfinished $value")).toEqual([]);
+    expect(extractMathExpressions("Inline $a + b$.", { inline: false })).toEqual([]);
+    expect(extractMathExpressions("$$\na + b\n$$", { block: false })).toEqual([]);
+  });
+
   it("notifies math expression updates through the editor plugin lifecycle", () => {
     const counts: number[] = [];
     const plugin = mathPlugin({
@@ -104,6 +110,14 @@ describe("content plugins", () => {
     expect(result.data).toEqual({ title: "Test", published: true, order: 3 });
     expect(result.body).toBe("# Body");
     expect(result.errors).toEqual([]);
+  });
+
+  it("keeps valid frontmatter values while reporting invalid lines", () => {
+    const result = parseFrontmatter("---\ntitle: Test\ninvalid line\npublished: false\n---\n\n# Body");
+
+    expect(result.data).toEqual({ title: "Test", published: false });
+    expect(result.errors).toEqual(["Invalid frontmatter line 2"]);
+    expect(result.body).toBe("# Body");
   });
 
   it("notifies frontmatter updates through the editor plugin lifecycle", () => {
@@ -129,6 +143,14 @@ describe("content plugins", () => {
       "heading-increment",
       "duplicate-heading-id",
     ]);
+  });
+
+  it("only reports enabled markdown lint rules", () => {
+    const diagnostics = lintMarkdown("# One\n\n### Jump\n\n![](image.png)\n[]()", {
+      rules: ["empty-link"],
+    });
+
+    expect(diagnostics.map((diagnostic) => diagnostic.rule)).toEqual(["empty-link"]);
   });
 
   it("notifies markdown lint diagnostics through the editor plugin lifecycle", () => {

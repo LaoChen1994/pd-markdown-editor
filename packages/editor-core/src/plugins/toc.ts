@@ -69,14 +69,46 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
 
   function renderToc(items: TocItem[]): void {
     if (!tocContainer) return;
-    tocContainer.innerHTML = `
-      <div style="font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#656d76;margin-bottom:12px;">目录</div>
-      <ul style="list-style:none;padding:0;margin:0;">
-        ${items.map(item => `
-          <li><a href="#${item.id}" data-id="${item.id}" style="display:block;padding:4px ${8 + (item.level - 1) * 12}px;color:#656d76;text-decoration:none;font-size:13px;border-radius:4px;">${item.text}</a></li>
-        `).join("")}
-      </ul>
-    `;
+    tocContainer.replaceChildren();
+
+    const title = document.createElement("div");
+    title.textContent = "目录";
+    Object.assign(title.style, {
+      fontWeight: "600",
+      fontSize: "12px",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      color: "#656d76",
+      marginBottom: "12px",
+    });
+    tocContainer.appendChild(title);
+
+    const list = document.createElement("ul");
+    Object.assign(list.style, {
+      listStyle: "none",
+      padding: "0",
+      margin: "0",
+    });
+
+    for (const item of items) {
+      const listItem = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = `#${item.id}`;
+      link.dataset.id = item.id;
+      link.textContent = item.text;
+      Object.assign(link.style, {
+        display: "block",
+        padding: `4px ${8 + (item.level - 1) * 12}px`,
+        color: "#656d76",
+        textDecoration: "none",
+        fontSize: "13px",
+        borderRadius: "4px",
+      });
+      listItem.appendChild(link);
+      list.appendChild(listItem);
+    }
+
+    tocContainer.appendChild(list);
   }
 
   return {

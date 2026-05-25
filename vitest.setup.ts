@@ -1,4 +1,6 @@
 if (typeof document !== "undefined") {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+
   Range.prototype.getClientRects ??= () => ({
     length: 0,
     item: () => null,
@@ -19,4 +21,3 @@ if (typeof document !== "undefined") {
     toJSON: () => ({}),
   });
 }
-
