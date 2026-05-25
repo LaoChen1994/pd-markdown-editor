@@ -1,5 +1,15 @@
 # pd-editor-react
 
+## 1.2.2
+
+### Patch Changes
+
+- 974201a: Prevent controlled React and Vue value sync from emitting editor change callbacks, align Vue preview with React by omitting raw HTML nodes, and render TOC heading text through DOM text nodes instead of HTML strings.
+- d39e7bc: Point npm package homepage metadata to the GitHub Pages demo.
+- Updated dependencies [974201a]
+- Updated dependencies [d39e7bc]
+  - pd-editor-core@1.2.2
+
 ## 1.2.1
 
 ### Patch Changes
