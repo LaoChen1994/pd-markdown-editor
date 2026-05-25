@@ -322,7 +322,7 @@ Make sure Tailwind scans `pd-shad-ui` and `pd-markdown-ui` in `node_modules`, be
 
 ### Can I use `v-model`?
 
-Yes. `v-model` is the recommended component API. Use `defaultValue` for one-time uncontrolled initial content.
+Yes. `v-model` is the recommended component API. External `modelValue` updates are synchronized into the editor without emitting `update:modelValue` again. Use `defaultValue` for one-time uncontrolled initial content.
 
 ### Can I hide preview or toolbar?
 

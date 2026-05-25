@@ -138,6 +138,7 @@ editor.getCommandState("heading2"); // { active: boolean, enabled: boolean }
 ```ts
 editor.getValue();
 editor.setValue("# Updated");
+editor.setValue("# External sync", { emitChange: false }); // update without onChange/plugin update callbacks
 editor.focus();
 editor.setTheme("dark");
 editor.setReadOnly(true);
@@ -304,6 +305,10 @@ Yes. This package is the DOM-only core. Use `pd-editor-react` or `pd-editor-vue`
 ### Does read-only mode block toolbar and programmatic commands?
 
 Yes. `canExecute()` returns `false`, and command helpers avoid document changes while read-only.
+
+### Can I update the document without firing change callbacks?
+
+Yes. `editor.setValue(value, { emitChange: false })` updates the document and toolbar state without calling `onChange` or plugin `onUpdate` hooks. Framework adapters use this for controlled value sync.
 
 ### Can I add plugins after the editor is mounted?
 

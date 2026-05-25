@@ -202,6 +202,12 @@ pnpm install
 # Full CI gate
 pnpm run ci
 
+# Unit tests
+pnpm test
+
+# Type checking
+pnpm typecheck
+
 # Build all packages
 pnpm build
 

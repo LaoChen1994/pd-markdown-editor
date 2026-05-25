@@ -323,7 +323,7 @@ Make sure Tailwind scans `pd-shad-ui` and `pd-markdown-ui` in `node_modules`, be
 
 ### Can I use it as a controlled component?
 
-Yes. Pass `value` and `onChange`. For one-time initial content, use `defaultValue`.
+Yes. Pass `value` and `onChange`. External `value` updates are synchronized into the editor without calling `onChange` again. For one-time initial content, use `defaultValue`.
 
 ### Can I hide preview or toolbar?
 
