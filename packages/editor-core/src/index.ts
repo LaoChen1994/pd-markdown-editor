@@ -10,6 +10,7 @@ export type {
   ToolbarContext,
   MarkdownEditorInstance,
   MarkdownEditorOptions,
+  MarkdownCodeLanguages,
   Extension,
 } from "./types";
 

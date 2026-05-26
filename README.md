@@ -16,6 +16,7 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 - 🚀 **Framework Agnostic Core**: Lightweight editor engine built on CodeMirror 6.
 - ⚛️ **Modern Adapters**: Official support for **React** and **Vue 3**.
 - 🛠️ **Plugin System**: Built-in plugins for uploads, TOC, code blocks, Mermaid, math, frontmatter, and lint diagnostics.
+- 📦 **Bundle-conscious Defaults**: Optional fenced code language data for smaller default editor bundles.
 - 🌓 **Themes**: Beautiful GitHub-inspired Light and Dark modes.
 - 📊 **Split-View**: Real-time side-by-side preview with synchronized scrolling support.
 - ⌨️ **Keyboard Shortcuts**: Rich set of standard Markdown formatting shortcuts.

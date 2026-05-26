@@ -281,6 +281,18 @@ const editor = new MarkdownEditor({
 });
 ```
 
+Fenced code language data is opt-in to keep the default editor bundle smaller. If you need CodeMirror syntax highlighting inside fenced code blocks, install and pass your own language resolver:
+
+```ts
+import { languages } from "@codemirror/language-data";
+import { MarkdownEditor } from "pd-editor-core";
+
+const editor = new MarkdownEditor({
+  parent,
+  codeLanguages: languages,
+});
+```
+
 ## Options
 
 | Option | Type | Default |
@@ -293,6 +305,7 @@ const editor = new MarkdownEditor({
 | `placeholder` | `string` | - |
 | `readOnly` | `boolean` | `false` |
 | `extensions` | `Extension[]` | `[]` |
+| `codeLanguages` | `MarkdownCodeLanguages` | - |
 | `plugins` | `EditorPlugin[]` | `[]` |
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` |
 

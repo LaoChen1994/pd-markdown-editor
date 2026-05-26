@@ -3,7 +3,7 @@ import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
 import { components as mdUiComponents } from "pd-markdown-ui/vue";
 import katex from "katex";
-import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
+import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Component, PropType, VNode, VNodeChild } from "vue";
 
 /** Simplified AST node shape (compatible with mdast Root/Content) */
@@ -327,6 +327,7 @@ export const MarkdownEditor = defineComponent({
     toolbar: { type: [Boolean, Array] as PropType<boolean | ToolbarItem[]>, default: true },
     plugins: { type: Array as PropType<EditorPlugin[]>, default: () => [] },
     extensions: { type: Array as PropType<Extension[]>, default: () => [] },
+    codeLanguages: { type: [Array, Function] as PropType<MarkdownCodeLanguages>, default: undefined },
     /** Custom component overrides for Markdown rendering */
     renderComponentMap: { type: Object as PropType<Record<string, unknown>>, default: undefined },
   },
@@ -383,6 +384,7 @@ export const MarkdownEditor = defineComponent({
         placeholder: props.placeholder,
         readOnly: props.readOnly,
         extensions: props.extensions,
+        codeLanguages: props.codeLanguages,
         plugins: props.plugins,
         toolbar: props.toolbar,
       });

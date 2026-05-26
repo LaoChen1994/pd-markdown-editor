@@ -71,6 +71,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       placeholder,
       readOnly = false,
       extensions: userExtensions = [],
+      codeLanguages,
       plugins = [],
       toolbar = true,
     } = options;
@@ -111,7 +112,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     parent.appendChild(this.wrapperEl);
 
     // Build extensions
-    const defaultExts = createDefaultExtensions({ placeholder });
+    const defaultExts = createDefaultExtensions({ placeholder, codeLanguages });
     const themeExt = theme === "dark" ? createDarkTheme() : createLightTheme();
     const pluginExts = plugins.flatMap((plugin) => this.installPluginExtension(plugin));
 
