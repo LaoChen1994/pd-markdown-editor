@@ -1,5 +1,16 @@
 # pd-editor-react
 
+## 1.3.0
+
+### Minor Changes
+
+- 0f2e495: Make fenced code language data opt-in through the new `codeLanguages` editor option, removing the default `@codemirror/language-data` dependency from the core editor path.
+
+### Patch Changes
+
+- Updated dependencies [0f2e495]
+  - pd-editor-core@1.3.0
+
 ## 1.2.2
 
 ### Patch Changes
