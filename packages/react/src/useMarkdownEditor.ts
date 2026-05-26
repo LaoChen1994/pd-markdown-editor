@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
 import { MarkdownEditor } from "pd-editor-core";
-import type { MarkdownEditorOptions, EditorCommand, EditorPlugin, Extension } from "pd-editor-core";
+import type { MarkdownEditorOptions, EditorCommand, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 
 export interface UseMarkdownEditorOptions {
   initialValue?: string;
@@ -10,6 +10,7 @@ export interface UseMarkdownEditorOptions {
   placeholder?: string;
   readOnly?: boolean;
   extensions?: Extension[];
+  codeLanguages?: MarkdownCodeLanguages;
   plugins?: EditorPlugin[];
   toolbar?: boolean | MarkdownEditorOptions["toolbar"];
 }
@@ -55,6 +56,7 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       placeholder: options.placeholder,
       readOnly: options.readOnly,
       extensions: options.extensions,
+      codeLanguages: options.codeLanguages,
       plugins: options.plugins,
       toolbar: options.toolbar,
     });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EditorState } from "@codemirror/state";
 import { EditorView, runScopeHandlers } from "@codemirror/view";
+import { syntaxTree } from "@codemirror/language";
 import { MarkdownEditor } from "./editor";
 import type { EditorPlugin } from "./types";
 
@@ -113,6 +114,30 @@ describe("MarkdownEditor", () => {
 
     expect(installedValue).toBe("# Initial");
     expect(editor.getValue()).toBe("# Initial");
+
+    editor.destroy();
+  });
+
+  it("passes custom fenced code language resolvers to markdown parsing", () => {
+    const parent = document.createElement("div");
+    const languageInfos: string[] = [];
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "```demo\nconst value = 1;\n```",
+      codeLanguages: (info) => {
+        languageInfos.push(info);
+        return null;
+      },
+      toolbar: false,
+    });
+
+    syntaxTree(editor.getEditorView().state).iterate({
+      from: 0,
+      to: editor.getValue().length,
+      enter: () => true,
+    });
+
+    expect(languageInfos).toContain("demo");
 
     editor.destroy();
   });

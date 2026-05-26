@@ -4,7 +4,7 @@ import { MarkdownRenderer } from "pd-markdown/web";
 import { components as mdUiComponents } from "pd-markdown-ui";
 import katex from "katex";
 
-import type { EditorPlugin, ToolbarItem, Extension } from "pd-editor-core";
+import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { ComponentMap } from "pd-markdown/web";
 
 const renderMath = (value: string, displayMode: boolean): string => {
@@ -138,6 +138,8 @@ export interface MarkdownEditorProps {
   style?: React.CSSProperties;
   /** Custom CM6 extensions */
   extensions?: Extension[];
+  /** Optional fenced code language resolver for the CodeMirror editor */
+  codeLanguages?: MarkdownCodeLanguages;
   /** Custom component overrides for Markdown rendering */
   renderComponentMap?: Partial<ComponentMap>;
 }
@@ -163,6 +165,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   className = "",
   style = {},
   extensions = [],
+  codeLanguages,
   renderComponentMap,
 }) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +205,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       placeholder,
       readOnly,
       extensions,
+      codeLanguages,
       plugins,
       toolbar,
     });

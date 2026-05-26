@@ -1,4 +1,8 @@
 import type { Extension } from "@codemirror/state";
+import type { Language, LanguageDescription } from "@codemirror/language";
+
+/** Code language resolver for fenced Markdown code blocks in the editor */
+export type MarkdownCodeLanguages = readonly LanguageDescription[] | ((info: string) => Language | LanguageDescription | null);
 
 /** Editor command identifiers */
 export type EditorCommand =
@@ -88,6 +92,8 @@ export interface MarkdownEditorOptions {
   readOnly?: boolean;
   /** Custom CodeMirror 6 extensions */
   extensions?: Extension[];
+  /** Optional fenced code language resolver for the Markdown editor */
+  codeLanguages?: MarkdownCodeLanguages;
   /** Editor plugins */
   plugins?: EditorPlugin[];
   /** Toolbar config: true for default, false to hide, or custom items */

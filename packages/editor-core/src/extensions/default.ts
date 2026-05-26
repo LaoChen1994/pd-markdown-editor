@@ -4,10 +4,10 @@ import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentOnInp
 import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from "@codemirror/autocomplete";
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
-import { languages } from "@codemirror/language-data";
 import type { Extension } from "@codemirror/state";
 import { EditorState } from "@codemirror/state";
 import { placeholder as placeholderExt } from "@codemirror/view";
+import type { MarkdownCodeLanguages } from "../types";
 
 /**
  * Create default CodeMirror extensions for Markdown editing
@@ -15,6 +15,7 @@ import { placeholder as placeholderExt } from "@codemirror/view";
 export function createDefaultExtensions(options: {
   placeholder?: string;
   readOnly?: boolean;
+  codeLanguages?: MarkdownCodeLanguages;
 } = {}): Extension[] {
   const exts: Extension[] = [
     lineNumbers(),
@@ -32,7 +33,7 @@ export function createDefaultExtensions(options: {
     autocompletion(),
     highlightActiveLine(),
     highlightSelectionMatches(),
-    markdown({ base: markdownLanguage, codeLanguages: languages }),
+    markdown({ base: markdownLanguage, codeLanguages: options.codeLanguages }),
     keymap.of([
       ...closeBracketsKeymap,
       ...defaultKeymap,

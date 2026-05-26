@@ -114,6 +114,7 @@ export default {
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` | Built-in toolbar, hidden toolbar, or custom items |
 | `plugins` | `EditorPlugin[]` | `[]` | Core plugins |
 | `extensions` | `Extension[]` | `[]` | CodeMirror 6 extensions |
+| `codeLanguages` | `MarkdownCodeLanguages` | - | Optional fenced code language resolver for the editor |
 | `renderComponentMap` | `Partial<ComponentMap>` | - | Override Markdown preview components |
 | `className` | `string` | `""` | Outer container class |
 | `style` | `React.CSSProperties` | `{}` | Outer container style |
@@ -295,7 +296,7 @@ export const CustomShell = () => {
 };
 ```
 
-Initialization options are read when the editor mounts. `theme` and `readOnly` are synchronized after mount; structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, and `extensions` are not rebuilt automatically. Recreate the hook owner when those structural options need to change.
+Initialization options are read when the editor mounts. `theme` and `readOnly` are synchronized after mount; structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, `extensions`, and `codeLanguages` are not rebuilt automatically. Recreate the hook owner when those structural options need to change.
 
 ## SSR / Next.js
 
