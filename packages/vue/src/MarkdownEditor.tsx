@@ -52,6 +52,129 @@ const renderMath = (value: string, displayMode: boolean): string => {
   }
 };
 
+let mermaidPromise: Promise<any> | null = null;
+const loadMermaid = () => {
+  if (!mermaidPromise) {
+    mermaidPromise = import("mermaid").then((m) => {
+      m.default.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+      });
+      return m.default;
+    });
+  }
+  return mermaidPromise;
+};
+
+export const MermaidRenderer = defineComponent({
+  name: "MermaidRenderer",
+  props: {
+    value: { type: String, required: true },
+    theme: { type: String, default: "light" },
+  },
+  setup(props) {
+    const svgContent = ref("");
+    const error = ref<string | null>(null);
+
+    const renderDiagram = async () => {
+      try {
+        const m = await loadMermaid();
+        const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+        const isDark = props.theme === "dark";
+        m.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "base",
+          securityLevel: "loose",
+          fontFamily: "Inter, system-ui, sans-serif",
+          themeVariables: isDark ? {
+            background: "#0d1117",
+            primaryColor: "#21262d",
+            primaryTextColor: "#c9d1d9",
+            primaryBorderColor: "#30363d",
+            lineColor: "#8b949e",
+            secondaryColor: "#161b22",
+            tertiaryColor: "#0d1117",
+            nodeBorder: "#30363d",
+            mainBkg: "#21262d",
+            textColor: "#c9d1d9",
+          } : {
+            background: "#ffffff",
+            primaryColor: "#f6f8fa",
+            primaryTextColor: "#24292f",
+            primaryBorderColor: "#d0d7de",
+            lineColor: "#57606a",
+            secondaryColor: "#f6f8fa",
+            tertiaryColor: "#ffffff",
+            nodeBorder: "#d0d7de",
+            mainBkg: "#f6f8fa",
+            textColor: "#24292f",
+          },
+          flowchart: {
+            htmlLabels: true,
+            useWidth: true,
+            curve: "basis",
+          },
+        });
+        const { svg } = await m.render(id, props.value);
+        svgContent.value = svg;
+        error.value = null;
+      } catch (err: any) {
+        error.value = err.message || "Failed to render Mermaid diagram";
+      }
+    };
+
+    onMounted(() => renderDiagram());
+    watch(() => [props.value, props.theme], () => renderDiagram());
+
+    return () => {
+      if (error.value) {
+        return renderVNode(
+          "div",
+          {
+            class: "mermaid-error",
+            style: {
+              color: "#f85149",
+              padding: "12px",
+              border: "1px solid #f85149",
+              borderRadius: "6px",
+              margin: "12px 0",
+              background: "rgba(248, 81, 73, 0.1)",
+            },
+          },
+          [
+            renderVNode("p", { style: { margin: "0 0 6px 0" } }, [
+              renderVNode("strong", {}, "Mermaid rendering error:"),
+            ]),
+            renderVNode("pre", { style: { whiteSpace: "pre-wrap", margin: "0" } }, error.value),
+          ]
+        );
+      }
+
+      if (!svgContent.value) {
+        return renderVNode(
+          "div",
+          {
+            class: "mermaid-loading",
+            style: { padding: "12px", fontStyle: "italic", opacity: 0.7 },
+          },
+          "Rendering diagram..."
+        );
+      }
+
+      return renderVNode(
+        "div",
+        {
+          class: "pd-rendered-mermaid",
+          style: { display: "flex", justifyContent: "center", margin: "16px 0" },
+          innerHTML: svgContent.value,
+        }
+      );
+    };
+  },
+});
+
+
 const renderTextWithMath = (value: string, keyPrefix: string): VNodeChild[] => {
   const blockMatch = value.match(/^\s*\$\$([\s\S]+?)\$\$\s*$/);
   if (blockMatch) {
@@ -252,6 +375,11 @@ export function renderAstNode(
 
   // Code block
   if (node.type === "code") {
+    if (node.lang?.toLowerCase() === "mermaid") {
+      const theme = componentMap["_theme"] as string || "light";
+      return renderVNode(MermaidRenderer, { key, value: node.value ?? "", theme });
+    }
+
     const preComp = componentMap["pre"] as Component | undefined;
     const codeComp = componentMap["code"] as Component | undefined;
 
@@ -451,7 +579,11 @@ export const MarkdownEditor = defineComponent({
       // Render the AST preview using pd-markdown-ui/vue components
       const previewChildren: VNode[] = [];
       if (previewAst.value) {
-        const rendered = renderAstNode(previewAst.value, mergedComponents.value, "root");
+        const componentMapWithTheme = {
+          ...mergedComponents.value,
+          _theme: props.theme,
+        };
+        const rendered = renderAstNode(previewAst.value, componentMapWithTheme, "root");
         if (Array.isArray(rendered)) {
           previewChildren.push(...rendered);
         } else if (rendered && typeof rendered !== "string") {
