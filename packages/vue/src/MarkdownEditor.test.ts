@@ -118,4 +118,24 @@ describe("Vue markdown UI renderer", () => {
     app.unmount();
     container.remove();
   });
+
+  it("renders loading placeholder or MermaidRenderer inside Vue markdown preview component", async () => {
+    const container = document.createElement("div");
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        modelValue: "```mermaid\ngraph TD\n  A --> B\n```",
+        preview: "preview",
+      }),
+    });
+
+    document.body.appendChild(container);
+    app.mount(container);
+    await nextTick();
+
+    expect(container.querySelector(".mermaid-loading")).not.toBeNull();
+
+    app.unmount();
+    container.remove();
+  });
 });
+

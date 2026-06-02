@@ -109,6 +109,104 @@ export const markdownUiComponentMap: Partial<ComponentMap> = {
   blockquote: ({ children }) => React.createElement(mdUiComponents.blockquote as React.ElementType, null, children),
 };
 
+let mermaidPromise: Promise<any> | null = null;
+const loadMermaid = () => {
+  if (!mermaidPromise) {
+    mermaidPromise = import("mermaid").then((m) => {
+      m.default.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+      });
+      return m.default;
+    });
+  }
+  return mermaidPromise;
+};
+
+export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark" }> = ({ value, theme }) => {
+  const [svgContent, setSvgContent] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const renderDiagram = async () => {
+      try {
+        const m = await loadMermaid();
+        if (!active) return;
+        
+        const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+        const isDark = theme === "dark";
+        m.initialize({
+          startOnLoad: false,
+          theme: isDark ? "dark" : "base",
+          securityLevel: "loose",
+          fontFamily: "Inter, system-ui, sans-serif",
+          themeVariables: isDark ? {
+            background: "#0d1117",
+            primaryColor: "#21262d",
+            primaryTextColor: "#c9d1d9",
+            primaryBorderColor: "#30363d",
+            lineColor: "#8b949e",
+            secondaryColor: "#161b22",
+            tertiaryColor: "#0d1117",
+            nodeBorder: "#30363d",
+            mainBkg: "#21262d",
+            textColor: "#c9d1d9",
+          } : {
+            background: "#ffffff",
+            primaryColor: "#f6f8fa",
+            primaryTextColor: "#24292f",
+            primaryBorderColor: "#d0d7de",
+            lineColor: "#57606a",
+            secondaryColor: "#f6f8fa",
+            tertiaryColor: "#ffffff",
+            nodeBorder: "#d0d7de",
+            mainBkg: "#f6f8fa",
+            textColor: "#24292f",
+          },
+          flowchart: {
+            htmlLabels: true,
+            useWidth: true,
+            curve: "basis",
+          },
+        });
+
+        const { svg } = await m.render(id, value);
+        if (active) {
+          setSvgContent(svg);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (active) {
+          setError(err.message || "Failed to render Mermaid diagram");
+        }
+      }
+    };
+
+    renderDiagram();
+    return () => {
+      active = false;
+    };
+  }, [value, theme]);
+
+  if (error) {
+    return (
+      <div className="mermaid-error" style={{ color: "#f85149", padding: "12px", border: "1px solid #f85149", borderRadius: "6px", margin: "12px 0", background: "rgba(248, 81, 73, 0.1)" }}>
+        <p style={{ margin: "0 0 6px 0" }}><strong>Mermaid rendering error:</strong></p>
+        <pre style={{ whiteSpace: "pre-wrap", margin: "0" }}>{error}</pre>
+      </div>
+    );
+  }
+
+  if (!svgContent) {
+    return <div className="mermaid-loading" style={{ padding: "12px", fontStyle: "italic", opacity: 0.7 }}>Rendering diagram...</div>;
+  }
+
+  return <div className="pd-rendered-mermaid" dangerouslySetInnerHTML={{ __html: svgContent }} style={{ display: "flex", justifyContent: "center", margin: "16px 0" }} />;
+};
+
+
 export interface MarkdownEditorProps {
   /** Controlled value */
   value?: string;
@@ -181,8 +279,25 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
 
   // Merge pd-markdown-ui components with user overrides
   const mergedComponents = React.useMemo(
-    () => ({ ...markdownUiComponentMap, ...renderComponentMap }),
-    [renderComponentMap]
+    () => ({
+      ...markdownUiComponentMap,
+      code: ({ node }: { node: any }) => {
+        if (node.lang?.toLowerCase() === "mermaid") {
+          return <MermaidRenderer value={node.value ?? ""} theme={theme} />;
+        }
+        if (renderComponentMap?.code) {
+          return renderComponentMap.code({ node });
+        }
+        const className = node.lang ? `language-${node.lang}` : undefined;
+        return React.createElement(
+          mdUiComponents.pre as React.ElementType,
+          null,
+          React.createElement(mdUiComponents.code as React.ElementType, { className }, node.value)
+        );
+      },
+      ...renderComponentMap,
+    }),
+    [renderComponentMap, theme]
   );
 
   // Initialize editor

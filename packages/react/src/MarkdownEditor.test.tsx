@@ -169,4 +169,29 @@ describe("React markdown UI adapter", () => {
     });
     container.remove();
   });
+
+  it("renders a loading indicator or dynamic component for mermaid code blocks", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+
+    document.body.appendChild(container);
+
+    await act(async () => {
+      root.render(
+        <MarkdownEditorComponent
+          value={"```mermaid\ngraph TD\n  A --> B\n```"}
+          preview="preview"
+        />
+      );
+    });
+
+    // Since mermaid is lazy loaded, we expect at least the loading state initially
+    expect(container.innerHTML).toContain("mermaid");
+    expect(container.querySelector(".mermaid-loading")).not.toBeNull();
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
 });

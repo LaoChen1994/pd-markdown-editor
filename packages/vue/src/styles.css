@@ -1,2 +1,95 @@
 @import "pd-markdown-ui/styles.css";
 @import "katex/dist/katex.min.css";
+
+/* Modern, Elegant Mermaid Visual Overrides */
+.pd-rendered-mermaid {
+  background: transparent;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  max-width: 100%;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pd-rendered-mermaid svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Elegant node shapes */
+.pd-rendered-mermaid .node rect,
+.pd-rendered-mermaid .node circle,
+.pd-rendered-mermaid .node polygon,
+.pd-rendered-mermaid .node path {
+  fill: #f4f5f6 !important;
+  stroke: #e4e7eb !important;
+  stroke-width: 1.5px !important;
+  rx: 8px !important;
+  ry: 8px !important;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid .node rect,
+.pd-md-theme-dark .pd-rendered-mermaid .node circle,
+.pd-md-theme-dark .pd-rendered-mermaid .node polygon,
+.pd-md-theme-dark .pd-rendered-mermaid .node path {
+  fill: #1f242c !important;
+  stroke: #2f3640 !important;
+}
+
+/* Dynamic Hover Effects */
+.pd-rendered-mermaid .node:hover rect,
+.pd-rendered-mermaid .node:hover circle,
+.pd-rendered-mermaid .node:hover polygon,
+.pd-rendered-mermaid .node:hover path {
+  fill: #e8ecf1 !important;
+  stroke: #3b82f6 !important;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid .node:hover rect,
+.pd-md-theme-dark .pd-rendered-mermaid .node:hover circle,
+.pd-md-theme-dark .pd-rendered-mermaid .node:hover polygon,
+.pd-md-theme-dark .pd-rendered-mermaid .node:hover path {
+  fill: #272e3a !important;
+  stroke: #58a6ff !important;
+}
+
+/* Typography styles */
+.pd-rendered-mermaid .node .label,
+.pd-rendered-mermaid .node text {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  fill: #374151 !important;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid .node .label,
+.pd-md-theme-dark .pd-rendered-mermaid .node text {
+  fill: #c9d1d9 !important;
+}
+
+/* Elegant edges & arrows */
+.pd-rendered-mermaid .edgePath .path {
+  stroke: #9ca3af !important;
+  stroke-width: 1.5px !important;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid .edgePath .path {
+  stroke: #4b5563 !important;
+}
+
+.pd-rendered-mermaid .marker {
+  fill: #9ca3af !important;
+  stroke: none !important;
+}
+
+.pd-md-theme-dark .pd-rendered-mermaid .marker {
+  fill: #4b5563 !important;
+}
+
