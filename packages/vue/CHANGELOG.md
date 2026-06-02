@@ -1,5 +1,11 @@
 # pd-editor-vue
 
+## 1.4.0
+
+### Minor Changes
+
+- ab60b76: feat: add lazy-loaded graphical mermaid flowchart rendering with modern styling
+
 ## 1.3.0
 
 ### Minor Changes
