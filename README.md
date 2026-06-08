@@ -5,7 +5,7 @@
 [![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/LaoChen1994/pd-markdown-editor)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
-A high-performance, modular, and framework-agnostic Markdown editor monorepo. Powered by **CodeMirror 6**, designed for extensibility and premium user experience.
+An embeddable Markdown editor SDK for **technical content, AI writing tools, and CMS workflows**. Build with React, Vue 3, or the framework-agnostic CodeMirror 6 core while keeping content portable Markdown.
 
 Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
 
@@ -13,9 +13,10 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 
 ## ✨ Features
 
-- 🚀 **Framework Agnostic Core**: Lightweight editor engine built on CodeMirror 6.
-- ⚛️ **Modern Adapters**: Official support for **React** and **Vue 3**.
-- 🛠️ **Plugin System**: Built-in plugins for uploads, TOC, code blocks, Mermaid, math, frontmatter, and lint diagnostics.
+- 🧰 **Technical Content Included**: Preview Mermaid diagrams, math, code blocks, and frontmatter without assembling the rendering stack yourself.
+- 🤖 **AI-ready Markdown**: Keep generated and edited content in a portable text format that is easy to store, diff, stream, and transform.
+- ⚛️ **React, Vue, or Vanilla**: Use a ready-made framework component or build a custom shell on the shared CodeMirror 6 core.
+- 🛠️ **Workflow Plugins**: Built-in plugins for uploads, TOC, code blocks, Mermaid, math, frontmatter, and lint diagnostics.
 - 📦 **Bundle-conscious Defaults**: Optional fenced code language data for smaller default editor bundles.
 - 🌓 **Themes**: Beautiful GitHub-inspired Light and Dark modes.
 - 📊 **Split-View**: Real-time side-by-side preview with synchronized scrolling support.
@@ -40,12 +41,12 @@ External runtime dependencies include [`pd-markdown`](https://www.npmjs.com/pack
 
 ## 🚀 Quick Start
 
-Install the adapter with its framework peers. The styled React/Vue entries also expect Tailwind because `pd-markdown-ui` uses `pd-shad-ui`'s Tailwind-powered `pd-*` classes.
+Install one adapter in an existing React or Vue application. It installs the core editor and includes the default preview styles.
 
 ```bash
-pnpm add pd-editor-react pd-editor-core react react-dom tailwindcss
+pnpm add pd-editor-react
 # or
-pnpm add pd-editor-vue pd-editor-core vue tailwindcss
+pnpm add pd-editor-vue
 ```
 
 ### React Usage
@@ -69,7 +70,7 @@ function App() {
 }
 ```
 
-The default React and Vue entries include `pd-shad-ui` and KaTeX styles automatically. For manual style control, import the headless entry and styles explicitly:
+The default React and Vue entries include preview and KaTeX styles automatically. For manual style control, import the headless entry and styles explicitly:
 
 ```tsx
 import { MarkdownEditor } from 'pd-editor-react/headless';
@@ -172,6 +173,8 @@ editor.unuse('toc');
 ```
 
 The React and Vue preview adapters do not render raw HTML Markdown nodes by default. If your application needs embedded HTML, sanitize it before rendering it through a custom preview pipeline.
+
+Default fenced code previews stay lightweight and render semantic `<pre><code>` markup without loading a full syntax-highlighting language catalog. Use `renderComponentMap` when your application needs a specific highlighter.
 
 ## ⌨️ Editing Experience
 

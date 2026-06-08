@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
 
-A Vue 3 Markdown editor built on **CodeMirror 6**, with live preview, `pd-markdown-ui` typography, image upload, TOC, toolbar commands, and a composable API for custom editor shells.
+A Vue 3 Markdown editor for **technical content and AI writing workflows**, with CodeMirror 6, live Mermaid and math preview, frontmatter, linting, image upload, and a composable API.
 
 Use it when you need a production-ready Markdown field without hand-assembling parser, preview, styling, shortcuts, plugins, and CodeMirror integration yourself.
 
@@ -29,14 +29,14 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 ## Install
 
 ```bash
-pnpm add pd-editor-vue pd-editor-core vue tailwindcss
-# npm install pd-editor-vue pd-editor-core vue tailwindcss
-# yarn add pd-editor-vue pd-editor-core vue tailwindcss
+pnpm add pd-editor-vue
+# npm install pd-editor-vue
+# yarn add pd-editor-vue
 ```
 
-`vue` and `tailwindcss` are peer dependencies so your app owns framework and styling versions.
+`vue` is a peer dependency. The adapter installs `pd-editor-core` and includes the default preview styles.
 
-## Zero-Cost Quick Start
+## Quick Start
 
 ```vue
 <script setup lang="ts">
@@ -70,18 +70,6 @@ import { MarkdownEditor } from "pd-editor-vue/headless";
 import "pd-editor-vue/styles.css";
 ```
 
-When using Tailwind, make sure your content config can see `pd-shad-ui` / `pd-markdown-ui` classes:
-
-```ts
-export default {
-  content: [
-    "./src/**/*.{vue,ts,tsx}",
-    "./node_modules/pd-shad-ui/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/pd-markdown-ui/**/*.{js,ts,jsx,tsx}",
-  ],
-};
-```
-
 ## Feature Matrix
 
 | Area | Support |
@@ -95,6 +83,8 @@ export default {
 | Commands | Formatting, headings, lists, quote, code, link, image, table, horizontal rule |
 | Runtime controls | Reactive `theme`, `readOnly`, `modelValue` sync |
 | Advanced | CodeMirror extensions, custom preview component map |
+
+Fenced code previews render lightweight semantic `<pre><code>` markup by default. Override `renderComponentMap.code` when your application needs a specific syntax highlighter.
 
 ## Props & Events
 
@@ -316,10 +306,6 @@ The editor requires a browser DOM. In SSR frameworks, mount it from a client-onl
 ### Do I need to import CSS?
 
 If you import `pd-editor-vue`, base preview styles are included automatically. If you import `pd-editor-vue/headless`, import `pd-editor-vue/styles.css` yourself.
-
-### Why do some `pd-*` classes look unstyled?
-
-Make sure Tailwind scans `pd-shad-ui` and `pd-markdown-ui` in `node_modules`, because the preview UI uses Tailwind-powered `pd-*` utilities.
 
 ### Can I use `v-model`?
 
