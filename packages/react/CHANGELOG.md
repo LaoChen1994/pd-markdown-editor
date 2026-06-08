@@ -1,5 +1,16 @@
 # pd-editor-react
 
+## 2.0.0
+
+### Major Changes
+
+- 00cb71e: Broaden Node.js compatibility, remove the unnecessary Tailwind peer requirement, keep default code previews lightweight without loading a full syntax-highlighting catalog, and clarify package positioning for technical content workflows.
+
+### Patch Changes
+
+- Updated dependencies [00cb71e]
+  - pd-editor-core@2.0.0
+
 ## 1.4.0
 
 ### Minor Changes
