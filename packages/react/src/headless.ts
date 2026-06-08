@@ -1,4 +1,5 @@
 export { MarkdownEditorComponent as MarkdownEditor } from "./MarkdownEditor";
+export { markdownUiComponents } from "./MarkdownEditor";
 export type { MarkdownEditorProps } from "./MarkdownEditor";
 export { useMarkdownEditor } from "./useMarkdownEditor";
 export type { UseMarkdownEditorOptions, UseMarkdownEditorReturn } from "./useMarkdownEditor";
@@ -37,6 +38,3 @@ export {
   parseFrontmatter,
   tocPlugin,
 } from "pd-editor-core";
-
-// Re-export pd-markdown-ui components for custom rendering
-export { components as markdownUiComponents } from "pd-markdown-ui";

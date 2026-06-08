@@ -1,11 +1,36 @@
 import React, { useRef, useEffect, useState } from "react";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { MarkdownRenderer } from "pd-markdown/web";
-import { components as mdUiComponents } from "pd-markdown-ui";
 import katex from "katex";
 
 import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { ComponentMap } from "pd-markdown/web";
+
+const styledTag = (tag: React.ElementType, baseClass: string): React.FC<React.HTMLAttributes<HTMLElement>> =>
+  ({ className = "", ...props }) => React.createElement(tag, { ...props, className: `${baseClass} ${className}` });
+
+export const markdownUiComponents = {
+  h1: styledTag("h1", "pd-scroll-m-20 pd-text-4xl pd-font-extrabold pd-tracking-tight lg:pd-text-5xl pd-mb-6"),
+  h2: styledTag("h2", "pd-scroll-m-20 pd-border-b pd-pb-2 pd-text-3xl pd-font-semibold pd-tracking-tight pd-first:mt-0 pd-mt-10 pd-mb-4"),
+  h3: styledTag("h3", "pd-scroll-m-20 pd-text-2xl pd-font-semibold pd-tracking-tight pd-mt-8 pd-mb-4"),
+  h4: styledTag("h4", "pd-scroll-m-20 pd-text-xl pd-font-semibold pd-tracking-tight pd-mt-6 pd-mb-2"),
+  h5: styledTag("h5", "pd-scroll-m-20 pd-text-lg pd-font-semibold pd-tracking-tight pd-mt-4 pd-mb-2"),
+  h6: styledTag("h6", "pd-scroll-m-20 pd-text-base pd-font-semibold pd-tracking-tight pd-mt-4 pd-mb-2"),
+  p: styledTag("p", "pd-leading-7 [&:not(:first-child)]:pd-mt-6 pd-mb-4"),
+  blockquote: styledTag("blockquote", "pd-mt-6 pd-border-l-2 pd-pl-6 pd-italic"),
+  ul: styledTag("ul", "pd-my-6 pd-ml-6 pd-list-disc [&>li]:pd-mt-2"),
+  ol: styledTag("ol", "pd-my-6 pd-ml-6 pd-list-decimal [&>li]:pd-mt-2"),
+  li: styledTag("li", "pd-leading-7"),
+  table: styledTag("table", "pd-my-6 pd-w-full pd-overflow-hidden pd-rounded-md"),
+  thead: styledTag("thead", "pd-bg-muted"),
+  tbody: styledTag("tbody", "pd-divide-y pd-divide-border"),
+  tfoot: styledTag("tfoot", "pd-bg-muted pd-font-medium"),
+  tr: styledTag("tr", "pd-m-0 pd-border-t pd-p-0 even:pd-bg-muted/50"),
+  th: styledTag("th", "pd-border pd-px-4 pd-py-2 pd-text-left pd-font-bold [&[align=center]]:pd-text-center [&[align=right]]:pd-text-right"),
+  td: styledTag("td", "pd-border pd-px-4 pd-py-2 pd-text-left [&[align=center]]:pd-text-center [&[align=right]]:pd-text-right"),
+  pre: styledTag("pre", "pd-pre-wrapper"),
+  code: styledTag("code", "pd-relative pd-rounded pd-bg-muted pd-px-[0.3rem] pd-py-[0.2rem] pd-font-mono pd-text-sm pd-font-semibold"),
+};
 
 const renderMath = (value: string, displayMode: boolean): string => {
   try {
@@ -64,49 +89,49 @@ const renderChildrenWithMath = (children: React.ReactNode): React.ReactNode[] =>
 
 export const markdownUiComponentMap: Partial<ComponentMap> = {
   heading: ({ node, children }) => {
-    const tag = `h${node.depth}` as keyof typeof mdUiComponents;
-    const Heading = mdUiComponents[tag] ?? tag;
+    const tag = `h${node.depth}` as keyof typeof markdownUiComponents;
+    const Heading = markdownUiComponents[tag] ?? tag;
     const data = node.data as { id?: unknown } | undefined;
     const id = typeof data?.id === "string" ? data.id : undefined;
     return React.createElement(Heading as React.ElementType, { id }, children);
   },
   paragraph: ({ children }) => (
-    React.createElement(mdUiComponents.p as React.ElementType, null, renderChildrenWithMath(children))
+    React.createElement(markdownUiComponents.p, null, renderChildrenWithMath(children))
   ),
   list: ({ node, children }) => {
-    const List = node.ordered ? mdUiComponents.ol : mdUiComponents.ul;
+    const List = node.ordered ? markdownUiComponents.ol : markdownUiComponents.ul;
     const start = node.ordered && node.start != null && node.start !== 1 ? node.start : undefined;
     return React.createElement(List as React.ElementType, { start }, children);
   },
   listItem: ({ node, children }) => {
     if (typeof node.checked === "boolean") {
-      return React.createElement(mdUiComponents.li as React.ElementType, { className: "task-list-item" }, [
+      return React.createElement(markdownUiComponents.li, { className: "task-list-item" }, [
         React.createElement("input", { key: "checkbox", type: "checkbox", checked: node.checked, readOnly: true }),
         React.createElement("span", { key: "content" }, children),
       ]);
     }
-    return React.createElement(mdUiComponents.li as React.ElementType, null, children);
+    return React.createElement(markdownUiComponents.li, null, children);
   },
-  table: ({ children }) => React.createElement(mdUiComponents.table as React.ElementType, null, children),
+  table: ({ children }) => React.createElement(markdownUiComponents.table, null, children),
   tableRow: ({ isHeader, children }) => {
-    const row = React.createElement(mdUiComponents.tr as React.ElementType, null, children);
-    return isHeader ? React.createElement(mdUiComponents.thead as React.ElementType, null, row) : row;
+    const row = React.createElement(markdownUiComponents.tr, null, children);
+    return isHeader ? React.createElement(markdownUiComponents.thead, null, row) : row;
   },
   tableCell: ({ node, children }) => {
-    const Cell = node.data?.isHeader ? mdUiComponents.th : mdUiComponents.td;
+    const Cell = node.data?.isHeader ? markdownUiComponents.th : markdownUiComponents.td;
     const align = node.data?.align ?? undefined;
     return React.createElement(Cell as React.ElementType, { align }, children);
   },
   code: ({ node }) => {
     const className = node.lang ? `language-${node.lang}` : undefined;
     return React.createElement(
-      mdUiComponents.pre as React.ElementType,
+      markdownUiComponents.pre,
       null,
-      React.createElement(mdUiComponents.code as React.ElementType, { className }, node.value)
+      React.createElement(markdownUiComponents.code, { className }, node.value)
     );
   },
-  inlineCode: ({ node }) => React.createElement(mdUiComponents.code as React.ElementType, null, node.value),
-  blockquote: ({ children }) => React.createElement(mdUiComponents.blockquote as React.ElementType, null, children),
+  inlineCode: ({ node }) => React.createElement(markdownUiComponents.code, null, node.value),
+  blockquote: ({ children }) => React.createElement(markdownUiComponents.blockquote, null, children),
 };
 
 let mermaidPromise: Promise<any> | null = null;
@@ -290,9 +315,9 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
         }
         const className = node.lang ? `language-${node.lang}` : undefined;
         return React.createElement(
-          mdUiComponents.pre as React.ElementType,
+          markdownUiComponents.pre,
           null,
-          React.createElement(mdUiComponents.code as React.ElementType, { className }, node.value)
+          React.createElement(markdownUiComponents.code, { className }, node.value)
         );
       },
       ...renderComponentMap,

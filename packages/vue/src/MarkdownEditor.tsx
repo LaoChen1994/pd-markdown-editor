@@ -1,7 +1,6 @@
-import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick } from "vue";
+import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick, h } from "vue";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
-import { components as mdUiComponents } from "pd-markdown-ui/vue";
 import katex from "katex";
 import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Component, PropType, VNode, VNodeChild } from "vue";
@@ -27,6 +26,36 @@ interface AstNode {
 }
 
 type JsxRenderable = (props: Record<string, unknown> & { children?: VNodeChild | (() => VNodeChild) }) => VNode;
+
+const styledTag = (tag: string, baseClass: string) => defineComponent({
+  inheritAttrs: false,
+  setup(_, { attrs, slots }) {
+    return () => h(tag, { ...attrs, class: `${baseClass} ${attrs.class ?? ""}` }, slots.default?.());
+  },
+});
+
+export const markdownUiComponents = {
+  h1: styledTag("h1", "pd-scroll-m-20 pd-text-4xl pd-font-extrabold pd-tracking-tight lg:pd-text-5xl pd-mb-6"),
+  h2: styledTag("h2", "pd-scroll-m-20 pd-border-b pd-pb-2 pd-text-3xl pd-font-semibold pd-tracking-tight pd-first:mt-0 pd-mt-10 pd-mb-4"),
+  h3: styledTag("h3", "pd-scroll-m-20 pd-text-2xl pd-font-semibold pd-tracking-tight pd-mt-8 pd-mb-4"),
+  h4: styledTag("h4", "pd-scroll-m-20 pd-text-xl pd-font-semibold pd-tracking-tight pd-mt-6 pd-mb-2"),
+  h5: styledTag("h5", "pd-scroll-m-20 pd-text-lg pd-font-semibold pd-tracking-tight pd-mt-4 pd-mb-2"),
+  h6: styledTag("h6", "pd-scroll-m-20 pd-text-base pd-font-semibold pd-tracking-tight pd-mt-4 pd-mb-2"),
+  p: styledTag("p", "pd-leading-7 [&:not(:first-child)]:pd-mt-6 pd-mb-4"),
+  blockquote: styledTag("blockquote", "pd-mt-6 pd-border-l-2 pd-pl-6 pd-italic"),
+  ul: styledTag("ul", "pd-my-6 pd-ml-6 pd-list-disc [&>li]:pd-mt-2"),
+  ol: styledTag("ol", "pd-my-6 pd-ml-6 pd-list-decimal [&>li]:pd-mt-2"),
+  li: styledTag("li", "pd-leading-7"),
+  table: styledTag("table", "pd-my-6 pd-w-full pd-overflow-hidden pd-rounded-md"),
+  thead: styledTag("thead", "pd-bg-muted"),
+  tbody: styledTag("tbody", "pd-divide-y pd-divide-border"),
+  tfoot: styledTag("tfoot", "pd-bg-muted pd-font-medium"),
+  tr: styledTag("tr", "pd-m-0 pd-border-t pd-p-0 even:pd-bg-muted/50"),
+  th: styledTag("th", "pd-border pd-px-4 pd-py-2 pd-text-left pd-font-bold [&[align=center]]:pd-text-center [&[align=right]]:pd-text-right"),
+  td: styledTag("td", "pd-border pd-px-4 pd-py-2 pd-text-left [&[align=center]]:pd-text-center [&[align=right]]:pd-text-right"),
+  pre: styledTag("pre", "pd-pre-wrapper"),
+  code: styledTag("code", "pd-relative pd-rounded pd-bg-muted pd-px-[0.3rem] pd-py-[0.2rem] pd-font-mono pd-text-sm pd-font-semibold"),
+};
 
 const renderVNode = (
   component: Component | string,
@@ -475,7 +504,7 @@ export const MarkdownEditor = defineComponent({
 
     // Merge pd-markdown-ui/vue components with user overrides
     const mergedComponents = computed(() => ({
-      ...mdUiComponents,
+      ...markdownUiComponents,
       ...(props.renderComponentMap ?? {}),
     }));
 

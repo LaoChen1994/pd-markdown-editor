@@ -26,9 +26,9 @@ adapter: React
 version: 1.2
 ---
 
-# Ship Markdown workflows faster
+# Technical Markdown that stays portable
 
-pd-editor combines a CodeMirror-powered writing surface with framework adapters for React and Vue. The same core engine handles shortcuts, preview state, plugins, and Markdown-aware typing.
+Build technical docs, AI writing tools, and CMS workflows without locking content into a proprietary format. The same Markdown renders diagrams, math, code, and structured metadata.
 
 ## Editing flow
 
@@ -114,9 +114,9 @@ const App = () => {
       <section className="demo-hero" aria-labelledby="demo-title">
         <div className="demo-hero-copy">
           <p className="demo-kicker">pd-markdown-editor</p>
-          <h1 id="demo-title">A Markdown editor demo that stays editable.</h1>
+          <h1 id="demo-title">Technical Markdown for React and Vue.</h1>
           <p className="demo-lede">
-            Try the React adapter with split preview, plugin diagnostics, frontmatter parsing, math extraction, and Mermaid detection in one page.
+            Build docs, AI writing tools, and CMS workflows with portable Markdown, live Mermaid diagrams, math, frontmatter, linting, and image upload.
           </p>
           <div className="demo-links" aria-label="Project links">
             <a href="https://github.com/LaoChen1994/pd-markdown-editor">GitHub</a>

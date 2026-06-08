@@ -6,7 +6,7 @@
 [![CodeMirror 6](https://img.shields.io/badge/CodeMirror-6-111827)](https://codemirror.net/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
 
-Framework-agnostic Markdown editor engine powered by **CodeMirror 6**.  
+Framework-agnostic Markdown editor engine for technical content workflows, powered by **CodeMirror 6**.
 Use it directly in vanilla JavaScript, or as the foundation for `pd-editor-react` and `pd-editor-vue`.
 
 `pd-editor-core` focuses on the hard editor work: selection-safe Markdown commands, polished typing flow, plugin lifecycle, image upload, TOC, themes, toolbar state, and CodeMirror extension interop.

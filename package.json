@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=20"
   },
   "scripts": {
     "build": "pnpm -r run build",
@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "pnpm --filter pd-editor-core build && pnpm -r --filter './packages/*' exec tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && NPM_CONFIG_CACHE=/tmp/pd-markdown-editor-npm-cache pnpm -r --filter './packages/*' exec npm pack --dry-run",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm bundle:check && NPM_CONFIG_CACHE=/tmp/pd-markdown-editor-npm-cache pnpm -r --filter './packages/*' exec npm pack --dry-run",
+    "bundle:check": "node scripts/check-demo-bundle.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish",

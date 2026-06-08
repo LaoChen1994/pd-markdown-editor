@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/LaoChen1994/pd-markdown-editor)
 
-A polished React Markdown editor with **CodeMirror 6**, live preview, `pd-markdown-ui` typography, image upload, TOC, toolbar commands, and TypeScript-first APIs.
+A React Markdown editor for **technical content and AI writing workflows**, with CodeMirror 6, live Mermaid and math preview, frontmatter, linting, image upload, and TypeScript-first APIs.
 
 Designed for product docs, CMS editors, AI writing tools, admin dashboards, developer portals, note-taking apps, and any React interface that needs a serious Markdown editing experience without building the editor stack from scratch.
 
@@ -30,14 +30,14 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 ## Install
 
 ```bash
-pnpm add pd-editor-react pd-editor-core react react-dom tailwindcss
-# npm install pd-editor-react pd-editor-core react react-dom tailwindcss
-# yarn add pd-editor-react pd-editor-core react react-dom tailwindcss
+pnpm add pd-editor-react
+# npm install pd-editor-react
+# yarn add pd-editor-react
 ```
 
-`react`, `react-dom`, and `tailwindcss` are peer dependencies so your application owns framework and Tailwind versions.
+`react` and `react-dom` are peer dependencies. The adapter installs `pd-editor-core` and includes the default preview styles.
 
-## Zero-Cost Quick Start
+## Quick Start
 
 ```tsx
 import { useState } from "react";
@@ -72,18 +72,6 @@ import { MarkdownEditor } from "pd-editor-react/headless";
 import "pd-editor-react/styles.css";
 ```
 
-When using Tailwind, make sure your content config can see `pd-shad-ui` / `pd-markdown-ui` classes:
-
-```ts
-export default {
-  content: [
-    "./src/**/*.{ts,tsx}",
-    "./node_modules/pd-shad-ui/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/pd-markdown-ui/**/*.{js,ts,jsx,tsx}",
-  ],
-};
-```
-
 ## Feature Matrix
 
 | Area | Support |
@@ -97,6 +85,8 @@ export default {
 | Commands | Formatting, headings, lists, quote, code, link, image, table, horizontal rule |
 | Runtime controls | `theme`, `readOnly`, controlled value sync |
 | Advanced | CodeMirror extensions, custom preview component map |
+
+Fenced code previews render lightweight semantic `<pre><code>` markup by default. Override `renderComponentMap.code` when your application needs a specific syntax highlighter.
 
 ## Props
 
@@ -317,10 +307,6 @@ export const ClientMarkdownEditor = () => (
 ### Do I need to import CSS?
 
 If you import `pd-editor-react`, base preview styles are included automatically. If you import `pd-editor-react/headless`, import `pd-editor-react/styles.css` yourself.
-
-### Why do some `pd-*` classes look unstyled?
-
-Make sure Tailwind scans `pd-shad-ui` and `pd-markdown-ui` in `node_modules`, because the preview UI uses Tailwind-powered `pd-*` utilities.
 
 ### Can I use it as a controlled component?
 
