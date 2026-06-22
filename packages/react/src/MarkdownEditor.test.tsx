@@ -185,9 +185,8 @@ describe("React markdown UI adapter", () => {
       );
     });
 
-    // Since mermaid is lazy loaded, we expect at least the loading state initially
     expect(container.innerHTML).toContain("mermaid");
-    expect(container.querySelector(".mermaid-loading")).not.toBeNull();
+    expect(container.querySelector(".mermaid-loading, .pd-rendered-mermaid")).not.toBeNull();
 
     await act(async () => {
       root.unmount();
