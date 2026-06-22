@@ -1,13 +1,15 @@
 # 📝 pd-markdown-editor
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/LaoChen1994/pd-markdown-editor)
+[![CI](https://github.com/LaoChen1994/pd-markdown-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/LaoChen1994/pd-markdown-editor/actions/workflows/ci.yml)
 [![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
 [![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/LaoChen1994/pd-markdown-editor)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
 An embeddable Markdown editor SDK for **technical content, AI writing tools, and CMS workflows**. Build with React, Vue 3, or the framework-agnostic CodeMirror 6 core while keeping content portable Markdown.
 
-Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://laochen1994.github.io/pd-markdown-editor/).
+[Try the live demo](https://laochen1994.github.io/pd-markdown-editor/) · [React on npm](https://www.npmjs.com/package/pd-editor-react) · [Vue on npm](https://www.npmjs.com/package/pd-editor-vue)
+
+![pd-markdown-editor live React demo](./docs/demo.webp)
 
 ---
 
@@ -19,7 +21,7 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 - 🛠️ **Workflow Plugins**: Built-in plugins for uploads, TOC, code blocks, Mermaid, math, frontmatter, and lint diagnostics.
 - 📦 **Bundle-conscious Defaults**: Optional fenced code language data for smaller default editor bundles.
 - 🌓 **Themes**: Beautiful GitHub-inspired Light and Dark modes.
-- 📊 **Split-View**: Real-time side-by-side preview with synchronized scrolling support.
+- 📊 **Split-View**: Real-time side-by-side editing and preview.
 - ⌨️ **Keyboard Shortcuts**: Rich set of standard Markdown formatting shortcuts.
 - 🎨 **Rich Typography**: Styled preview via `pd-markdown-ui`.
 
@@ -29,9 +31,9 @@ Try the interactive demo: [laochen1994.github.io/pd-markdown-editor](https://lao
 
 | Package | Version | Description |
 |---|---|---|
-| [`pd-editor-core`](./packages/editor-core) | `1.x` | Framework-agnostic editor engine. |
-| [`pd-editor-react`](./packages/react) | `1.x` | React adapter & hooks. |
-| [`pd-editor-vue`](./packages/vue) | `1.x` | Vue 3 adapter & composables. |
+| [`pd-editor-core`](./packages/editor-core) | `2.x` | Framework-agnostic editor engine. |
+| [`pd-editor-react`](./packages/react) | `2.x` | React adapter & hooks. |
+| [`pd-editor-vue`](./packages/vue) | `2.x` | Vue 3 adapter & composables. |
 | [`examples/react-demo`](./examples/react-demo) | private | React demo app. |
 | [`examples/vue-demo`](./examples/vue-demo) | private | Vue 3 demo app. |
 
@@ -235,6 +237,8 @@ pnpm changeset
 pnpm version-packages
 pnpm release
 ```
+
+Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the local workflow and pull request checklist.
 
 ## 📐 Architecture
 

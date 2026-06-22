@@ -6,6 +6,13 @@ import { MarkdownRenderer } from "pd-markdown/web";
 import { MarkdownEditorComponent, markdownUiComponentMap } from "./MarkdownEditor";
 import type { MarkdownEditorInstance } from "pd-editor-core";
 
+vi.mock("mermaid", () => ({
+  default: {
+    initialize: () => undefined,
+    render: async () => ({ svg: "<svg>diagram</svg>" }),
+  },
+}));
+
 describe("React markdown UI adapter", () => {
   it("maps mdast nodes to pd-markdown-ui components", () => {
     const html = renderToStaticMarkup(
@@ -170,7 +177,7 @@ describe("React markdown UI adapter", () => {
     container.remove();
   });
 
-  it("renders a loading indicator or dynamic component for mermaid code blocks", async () => {
+  it("renders mermaid code blocks with the dynamic component", async () => {
     const container = document.createElement("div");
     const root = createRoot(container);
 
@@ -185,9 +192,11 @@ describe("React markdown UI adapter", () => {
       );
     });
 
-    // Since mermaid is lazy loaded, we expect at least the loading state initially
-    expect(container.innerHTML).toContain("mermaid");
-    expect(container.querySelector(".mermaid-loading")).not.toBeNull();
+    await act(async () => {
+      await vi.waitFor(() => {
+        expect(container.querySelector(".pd-rendered-mermaid svg")).not.toBeNull();
+      });
+    });
 
     await act(async () => {
       root.unmount();
