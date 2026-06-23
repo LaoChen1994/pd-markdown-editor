@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 2.0.1
+
+### Patch Changes
+
+- 6a89179: Improve split preview usability with synchronized scrolling, mobile stacked layout, and toolbar aria labels.
+
 ## 2.0.0
 
 ### Major Changes
