@@ -93,3 +93,17 @@
   fill: #4b5563 !important;
 }
 
+@media (max-width: 620px) {
+  .pd-editor-vue[data-preview="split"] {
+    flex-direction: column !important;
+  }
+
+  .pd-editor-vue[data-preview="split"] .pd-md-preview {
+    border-left: 0 !important;
+    border-top: 1px solid var(--pd-editor-border, #d1d9e0) !important;
+  }
+
+  .pd-editor-vue[data-preview="split"] .pd-md-theme-dark {
+    border-top-color: #30363d !important;
+  }
+}

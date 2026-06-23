@@ -491,9 +491,12 @@ export const MarkdownEditor = defineComponent({
   emits: ["update:modelValue", "save"],
   setup(props, { emit }) {
     const editorContainerRef = ref<HTMLDivElement | null>(null);
+    const previewRef = ref<HTMLDivElement | null>(null);
     const editorRef = ref<CoreEditor | null>(null);
     const previewAst = ref<AstNode | null>(null);
     const latestValue = ref(props.modelValue ?? props.defaultValue);
+    const syncingScroll = ref(false);
+    let cleanupScrollSync: (() => void) | null = null;
 
     const parser = createParser();
 
@@ -554,8 +557,43 @@ export const MarkdownEditor = defineComponent({
       }
     };
 
-    onMounted(() => {
+    const mountScrollSync = () => {
+      cleanupScrollSync?.();
+      cleanupScrollSync = null;
+      if (props.preview !== "split") return;
+      const editorScroller = editorContainerRef.value?.querySelector<HTMLElement>(".cm-scroller");
+      const previewPane = previewRef.value;
+      if (!editorScroller || !previewPane) return;
+
+      const syncPreview = () => {
+        if (syncingScroll.value) return;
+        syncingScroll.value = true;
+        const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
+        const previewMax = previewPane.scrollHeight - previewPane.clientHeight;
+        previewPane.scrollTop = editorMax > 0 && previewMax > 0 ? (editorScroller.scrollTop / editorMax) * previewMax : 0;
+        syncingScroll.value = false;
+      };
+      const syncEditor = () => {
+        if (syncingScroll.value) return;
+        syncingScroll.value = true;
+        const previewMax = previewPane.scrollHeight - previewPane.clientHeight;
+        const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
+        editorScroller.scrollTop = previewMax > 0 && editorMax > 0 ? (previewPane.scrollTop / previewMax) * editorMax : 0;
+        syncingScroll.value = false;
+      };
+
+      editorScroller.addEventListener("scroll", syncPreview);
+      previewPane.addEventListener("scroll", syncEditor);
+      cleanupScrollSync = () => {
+        editorScroller.removeEventListener("scroll", syncPreview);
+        previewPane.removeEventListener("scroll", syncEditor);
+      };
+    };
+
+    onMounted(async () => {
       mountEditor();
+      await nextTick();
+      mountScrollSync();
     });
 
     // Sync controlled value
@@ -590,12 +628,14 @@ export const MarkdownEditor = defineComponent({
       }
       await nextTick();
       mountEditor();
+      mountScrollSync();
       if (preview === "split") {
         updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
       }
     });
 
     onUnmounted(() => {
+      cleanupScrollSync?.();
       editorRef.value?.destroy();
       editorRef.value = null;
     });
@@ -623,6 +663,7 @@ export const MarkdownEditor = defineComponent({
       return (
         <Div
           class="pd-editor-vue"
+          data-preview={props.preview}
           style={{
             display: "flex",
             height: computedHeight.value,
@@ -646,6 +687,7 @@ export const MarkdownEditor = defineComponent({
           ) : null}
           {props.preview === "split" || props.preview === "preview" ? (
             <Div
+              ref={previewRef}
               class={`pd-md-preview pd-md-theme-${props.theme}`}
               style={{
                 flex: 1,
