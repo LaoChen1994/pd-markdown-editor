@@ -1,5 +1,16 @@
 # pd-editor-react
 
+## 2.1.0
+
+### Minor Changes
+
+- 6a89179: Improve split preview usability with synchronized scrolling, mobile stacked layout, and toolbar aria labels.
+
+### Patch Changes
+
+- Updated dependencies [6a89179]
+  - pd-editor-core@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
