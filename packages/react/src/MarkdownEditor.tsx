@@ -292,7 +292,9 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   renderComponentMap,
 }) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CoreEditor | null>(null);
+  const syncingScrollRef = useRef(false);
   const isControlled = value !== undefined;
   const latestValueRef = useRef(isControlled ? (value ?? "") : defaultValue);
   const onChangeRef = useRef(onChange);
@@ -395,6 +397,37 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
     }
   }, [preview, value, defaultValue, isControlled]);
 
+  useEffect(() => {
+    if (preview !== "split") return;
+    const editorScroller = editorContainerRef.current?.querySelector<HTMLElement>(".cm-scroller");
+    const previewPane = previewRef.current;
+    if (!editorScroller || !previewPane) return;
+
+    const syncPreview = () => {
+      if (syncingScrollRef.current) return;
+      syncingScrollRef.current = true;
+      const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
+      const previewMax = previewPane.scrollHeight - previewPane.clientHeight;
+      previewPane.scrollTop = editorMax > 0 && previewMax > 0 ? (editorScroller.scrollTop / editorMax) * previewMax : 0;
+      syncingScrollRef.current = false;
+    };
+    const syncEditor = () => {
+      if (syncingScrollRef.current) return;
+      syncingScrollRef.current = true;
+      const previewMax = previewPane.scrollHeight - previewPane.clientHeight;
+      const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
+      editorScroller.scrollTop = previewMax > 0 && editorMax > 0 ? (previewPane.scrollTop / previewMax) * editorMax : 0;
+      syncingScrollRef.current = false;
+    };
+
+    editorScroller.addEventListener("scroll", syncPreview);
+    previewPane.addEventListener("scroll", syncEditor);
+    return () => {
+      editorScroller.removeEventListener("scroll", syncPreview);
+      previewPane.removeEventListener("scroll", syncEditor);
+    };
+  }, [preview]);
+
   const computedHeight = typeof height === "number" ? `${height}px` : height;
 
   const containerStyle: React.CSSProperties = {
@@ -408,7 +441,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   };
 
   return (
-    <div className={`pd-editor-react ${className}`} style={containerStyle}>
+    <div className={`pd-editor-react ${className}`} data-preview={preview} style={containerStyle}>
       {preview !== "preview" && (
         <div
           ref={editorContainerRef}
@@ -423,6 +456,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       )}
       {(preview === "split" || preview === "preview") && (
         <div
+          ref={previewRef}
           className={`pd-md-preview pd-md-theme-${theme}`}
           style={{
             flex: 1,

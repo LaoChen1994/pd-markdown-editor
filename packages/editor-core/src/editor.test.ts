@@ -339,6 +339,7 @@ describe("MarkdownEditor", () => {
     const boldButton = parent.querySelector<HTMLButtonElement>('[title="Bold (Ctrl+B)"]');
 
     expect(boldButton).not.toBeNull();
+    expect(boldButton?.getAttribute("aria-label")).toBe("Bold");
     expect(boldButton?.getAttribute("aria-pressed")).toBe("false");
 
     view.dispatch({ selection: { anchor: 2, head: 7 } });

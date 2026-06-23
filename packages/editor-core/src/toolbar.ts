@@ -78,6 +78,7 @@ export function createToolbarElement(
     btn.type = "button";
     btn.dataset.command = item.command;
     btn.title = item.shortcut ? `${item.label} (${item.shortcut})` : item.label;
+    btn.setAttribute("aria-label", item.label);
     btn.innerHTML = item.icon;
     Object.assign(btn.style, {
       display: "flex", alignItems: "center", justifyContent: "center",

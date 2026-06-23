@@ -51,6 +51,7 @@ export const Toolbar = defineComponent({
                 key={item.command}
                 type="button"
                 title={item.shortcut ? `${item.label} (${item.shortcut})` : item.label}
+                aria-label={item.label}
                 innerHTML={item.icon}
                 onClick={(event: Event) => {
                   event.preventDefault();

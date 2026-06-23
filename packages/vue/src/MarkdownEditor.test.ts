@@ -118,6 +118,46 @@ describe("Vue markdown UI renderer", () => {
     container.remove();
   });
 
+  it("syncs split preview scroll with the editor", async () => {
+    const container = document.createElement("div");
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        defaultValue: "# Title\n\n".repeat(80),
+        preview: "split",
+      }),
+    });
+
+    document.body.appendChild(container);
+    app.mount(container);
+    await nextTick();
+
+    await vi.waitFor(() => {
+      expect(container.querySelector(".cm-scroller")).not.toBeNull();
+    });
+
+    const editorScroller = container.querySelector<HTMLElement>(".cm-scroller");
+    const previewPane = container.querySelector<HTMLElement>(".pd-md-preview");
+
+    if (!editorScroller || !previewPane) {
+      throw new Error("Expected split editor and preview panes.");
+    }
+
+    expect(container.querySelector(".pd-editor-vue")?.getAttribute("data-preview")).toBe("split");
+
+    Object.defineProperty(editorScroller, "scrollHeight", { configurable: true, value: 1000 });
+    Object.defineProperty(editorScroller, "clientHeight", { configurable: true, value: 200 });
+    Object.defineProperty(previewPane, "scrollHeight", { configurable: true, value: 600 });
+    Object.defineProperty(previewPane, "clientHeight", { configurable: true, value: 200 });
+
+    editorScroller.scrollTop = 400;
+    editorScroller.dispatchEvent(new Event("scroll"));
+
+    expect(previewPane.scrollTop).toBe(200);
+
+    app.unmount();
+    container.remove();
+  });
+
   it("renders loading placeholder or MermaidRenderer inside Vue markdown preview component", async () => {
     const container = document.createElement("div");
     const app = createApp({
