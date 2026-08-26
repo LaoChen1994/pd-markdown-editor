@@ -48,6 +48,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private view?: EditorView;
   private pluginManager: PluginManager;
   private wrapperEl: HTMLElement;
+  private contentEl: HTMLElement;
   private toolbarEl: HTMLElement | null = null;
   private themeCompartment = new Compartment();
   private readOnlyCompartment = new Compartment();
@@ -103,11 +104,16 @@ export class MarkdownEditor implements MarkdownEditorInstance {
 
     this.refreshToolbar();
 
+    this.contentEl = document.createElement("div");
+    this.contentEl.className = "pd-editor-content";
+    Object.assign(this.contentEl.style, { display: "flex", flex: "1", minHeight: "0", overflow: "hidden" });
+
     // Editor container
     const editorContainer = document.createElement("div");
     editorContainer.className = "pd-editor-cm-container";
     Object.assign(editorContainer.style, { flex: "1", overflow: "auto" });
-    this.wrapperEl.appendChild(editorContainer);
+    this.contentEl.appendChild(editorContainer);
+    this.wrapperEl.appendChild(this.contentEl);
 
     parent.appendChild(this.wrapperEl);
 
@@ -230,6 +236,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   getSelection(): string {
     if (!this.view) return "";
     return getSelection(this.view);
+  }
+
+  getContentElement(): HTMLElement {
+    return this.contentEl;
   }
 
   insertAtCursor(text: string): void {

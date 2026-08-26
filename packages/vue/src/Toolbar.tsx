@@ -55,7 +55,8 @@ export const Toolbar = defineComponent({
                 innerHTML={item.icon}
                 onClick={(event: Event) => {
                   event.preventDefault();
-                  emit("command", item.command);
+                  if (item.onClick) item.onClick();
+                  else emit("command", item.command);
                 }}
                 style={{
                   display: "flex",

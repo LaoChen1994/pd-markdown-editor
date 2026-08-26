@@ -141,7 +141,7 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 
 The default toolbar includes:
 
-`bold`, `italic`, `strikethrough`, `heading1`, `heading2`, `heading3`, `unorderedList`, `orderedList`, `taskList`, `link`, `image`, `quote`, `code`, `codeBlock`, `table`, `horizontalRule`.
+`undo`, `redo`, `bold`, `italic`, `strikethrough`, `heading1`, `heading2`, `heading3`, `unorderedList`, `orderedList`, `taskList`, `link`, `image`, `quote`, `code`, `codeBlock`, `table`, `horizontalRule`, `search`.
 
 Disable it:
 

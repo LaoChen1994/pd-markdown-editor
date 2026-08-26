@@ -21,6 +21,7 @@ export interface ImageUploadPluginOptions {
 export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlugin {
   const { handler, accept = ["image/*"], maxSize, pasteUpload = true, dragUpload = true, onReject, onError } = options;
   let uploadId = 0;
+  let fileInput: HTMLInputElement | null = null;
 
   function isAccepted(file: File): boolean {
     return accept.some(a => {
@@ -64,6 +65,19 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     install(editor) {
       editorRef = editor;
       const extensions = [];
+      fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = accept.join(",");
+      fileInput.multiple = true;
+      fileInput.hidden = true;
+      fileInput.addEventListener("change", () => {
+        if (!editorRef || !fileInput) return;
+        for (const file of Array.from(fileInput.files ?? [])) {
+          uploadFile(file, editorRef);
+        }
+        fileInput.value = "";
+      });
+      document.body.appendChild(fileInput);
 
       if (pasteUpload) {
         extensions.push(EditorView.domEventHandlers({
@@ -104,9 +118,14 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
         command: "image-upload",
         label: "Upload Image",
         icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm-1 10H3l3-4 1.5 2L10 7l3 5zM5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>',
+        onClick: () => fileInput?.click(),
       };
     },
 
-    destroy() { editorRef = null; },
+    destroy() {
+      editorRef = null;
+      fileInput?.remove();
+      fileInput = null;
+    },
   };
 }

@@ -118,7 +118,8 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
       if (!tocContainer) {
         tocContainer = document.createElement("div");
         tocContainer.className = "pd-editor-toc";
-        Object.assign(tocContainer.style, { width: "200px", flexShrink: "0", padding: "16px", overflow: "auto", borderLeft: "1px solid #d1d9e0" });
+        Object.assign(tocContainer.style, { width: "clamp(120px, 25%, 180px)", flexShrink: "0", padding: "16px", overflow: "auto", borderLeft: "1px solid #d1d9e0" });
+        editor.getContentElement?.().appendChild(tocContainer);
       }
       // Initial render
       const toc = extractTocFromMarkdown(editor.getValue(), maxLevel);

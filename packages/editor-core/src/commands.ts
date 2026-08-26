@@ -1,5 +1,6 @@
 import type { EditorView } from "@codemirror/view";
-import { undo, redo } from "@codemirror/commands";
+import { undo, redo, undoDepth, redoDepth } from "@codemirror/commands";
+import { openSearchPanel } from "@codemirror/search";
 import { EditorState } from "@codemirror/state";
 import type { EditorCommand } from "./types";
 
@@ -239,7 +240,9 @@ export const outdentMarkdownBlock = (view: EditorView): boolean => {
 };
 
 export const canExecuteEditorCommand = (view: EditorView, command: EditorCommand | string): boolean => {
-  void command;
+  if (command === "search") return true;
+  if (command === "undo") return !view.state.readOnly && undoDepth(view.state) > 0;
+  if (command === "redo") return !view.state.readOnly && redoDepth(view.state) > 0;
   return canChangeDocument(view);
 };
 
@@ -269,6 +272,7 @@ export const getEditorCommandState = (view: EditorView, command: EditorCommand |
  * Execute a markdown editing command on the editor view
  */
 export function executeEditorCommand(view: EditorView, command: EditorCommand | string): boolean {
+  if (command === "search") return openSearchPanel(view);
   if (!canChangeDocument(view)) return false;
 
   // Undo/redo

@@ -88,7 +88,7 @@ const loadMermaid = () => {
       m.default.initialize({
         startOnLoad: false,
         theme: "default",
-        securityLevel: "loose",
+        securityLevel: "strict",
       });
       return m.default;
     });
@@ -114,7 +114,7 @@ export const MermaidRenderer = defineComponent({
         m.initialize({
           startOnLoad: false,
           theme: isDark ? "dark" : "base",
-          securityLevel: "loose",
+          securityLevel: "strict",
           fontFamily: "Inter, system-ui, sans-serif",
           themeVariables: isDark ? {
             background: "#0d1117",

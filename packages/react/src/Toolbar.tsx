@@ -56,7 +56,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             type="button"
             title={item.shortcut ? `${item.label} (${item.shortcut})` : item.label}
             aria-label={item.label}
-            onClick={(e) => { e.preventDefault(); onCommand(item.command); }}
+            onClick={(e) => {
+              e.preventDefault();
+              if (item.onClick) item.onClick();
+              else onCommand(item.command);
+            }}
             style={{
               display: "flex",
               alignItems: "center",

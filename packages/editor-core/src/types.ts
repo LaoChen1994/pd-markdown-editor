@@ -12,7 +12,7 @@ export type EditorCommand =
   | "unorderedList" | "orderedList" | "taskList"
   | "quote" | "code" | "codeBlock"
   | "horizontalRule" | "table"
-  | "undo" | "redo";
+  | "undo" | "redo" | "search";
 
 /** Toolbar item definition */
 export interface ToolbarItem {
@@ -26,6 +26,8 @@ export interface ToolbarItem {
   shortcut?: string;
   /** Whether this is a divider */
   divider?: boolean;
+  /** Optional custom action instead of command dispatch */
+  onClick?: () => void;
 }
 
 /** Current state for a command in the editor selection */
@@ -72,6 +74,7 @@ export interface MarkdownEditorInstance {
   wrapSelection(before: string, after: string): void;
   getSelection(): string;
   insertAtCursor(text: string): void;
+  getContentElement?(): HTMLElement;
 }
 
 /** Options for creating a MarkdownEditor */

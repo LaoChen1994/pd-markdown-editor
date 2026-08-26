@@ -358,4 +358,38 @@ describe("MarkdownEditor", () => {
 
     editor.destroy();
   });
+
+  it("surfaces history and search in the default toolbar", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "searchable content",
+    });
+    const undoButton = parent.querySelector<HTMLButtonElement>('[data-command="undo"]');
+    const redoButton = parent.querySelector<HTMLButtonElement>('[data-command="redo"]');
+    const searchButton = parent.querySelector<HTMLButtonElement>('[data-command="search"]');
+
+    expect(undoButton?.disabled).toBe(true);
+    expect(redoButton?.disabled).toBe(true);
+    expect(searchButton?.disabled).toBe(false);
+
+    editor.setValue("changed content");
+
+    expect(undoButton?.disabled).toBe(false);
+    undoButton?.click();
+    expect(editor.getValue()).toBe("searchable content");
+    expect(redoButton?.disabled).toBe(false);
+    redoButton?.click();
+    expect(editor.getValue()).toBe("changed content");
+
+    searchButton?.click();
+
+    expect(parent.querySelector(".cm-search")).not.toBeNull();
+
+    editor.setReadOnly(true);
+
+    expect(searchButton?.disabled).toBe(false);
+
+    editor.destroy();
+  });
 });
