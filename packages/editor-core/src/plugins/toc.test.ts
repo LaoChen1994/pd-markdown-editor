@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tocPlugin } from "./toc";
 import type { MarkdownEditorInstance } from "../types";
+import { MarkdownEditor } from "../editor";
 
 function createEditor(value: string): MarkdownEditorInstance {
   return {
@@ -22,6 +23,21 @@ function createEditor(value: string): MarkdownEditorInstance {
 }
 
 describe("tocPlugin", () => {
+  it("mounts and removes the default TOC inside the editor", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "# First",
+      plugins: [tocPlugin()],
+    });
+
+    const toc = parent.querySelector(".pd-editor-content > .pd-editor-toc");
+    expect(toc?.querySelector("a")?.textContent).toBe("First");
+
+    editor.destroy();
+    expect(parent.querySelector(".pd-editor-toc")).toBeNull();
+  });
+
   it("uses parser-generated unique heading ids", () => {
     const container = document.createElement("div");
     const plugin = tocPlugin({ container, maxLevel: 2 });

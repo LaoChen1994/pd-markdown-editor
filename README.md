@@ -2,14 +2,44 @@
 
 [![CI](https://github.com/LaoChen1994/pd-markdown-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/LaoChen1994/pd-markdown-editor/actions/workflows/ci.yml)
 [![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2563eb)](https://laochen1994.github.io/pd-markdown-editor/)
+[![React npm](https://img.shields.io/npm/v/pd-editor-react?label=pd-editor-react&color=06b6d4)](https://www.npmjs.com/package/pd-editor-react)
+[![Vue npm](https://img.shields.io/npm/v/pd-editor-vue?label=pd-editor-vue&color=42b883)](https://www.npmjs.com/package/pd-editor-vue)
 [![Frameworks](https://img.shields.io/badge/adapters-React%20%7C%20Vue%203-blue)](https://github.com/LaoChen1994/pd-markdown-editor)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
 An embeddable Markdown editor SDK for **technical content, AI writing tools, and CMS workflows**. Build with React, Vue 3, or the framework-agnostic CodeMirror 6 core while keeping content portable Markdown.
 
-[Try the live demo](https://laochen1994.github.io/pd-markdown-editor/) · [React on npm](https://www.npmjs.com/package/pd-editor-react) · [Vue on npm](https://www.npmjs.com/package/pd-editor-vue)
+[Try the live demo](https://laochen1994.github.io/pd-markdown-editor/) · [React on npm](https://www.npmjs.com/package/pd-editor-react) · [Vue on npm](https://www.npmjs.com/package/pd-editor-vue) · [Star on GitHub](https://github.com/LaoChen1994/pd-markdown-editor)
 
 ![pd-markdown-editor live React demo](./docs/demo.webp)
+
+---
+
+## Why This Editor?
+
+Use `pd-markdown-editor` when your product needs more than a textarea plus preview:
+
+- **Technical Markdown by default**: Mermaid, math, frontmatter, tables, task lists, code blocks, lint diagnostics, TOC, and image upload are already wired into one editor stack.
+- **One core, multiple adapters**: React, Vue 3, and vanilla JavaScript share the same CodeMirror 6 core and plugin contracts.
+- **Portable content**: Users edit plain Markdown, so AI output, CMS content, docs, and changelogs remain easy to store, diff, review, and migrate.
+- **Product-friendly escape hatches**: Bring your own CodeMirror extensions, preview component map, upload handler, toolbar, and runtime plugins.
+
+## When To Pick It
+
+| Need | Why it fits |
+|---|---|
+| AI writing or copilot output editor | Markdown stays streamable, diffable, and easy to post-process. |
+| CMS or admin Markdown field | Built-in upload, preview modes, frontmatter, and lint hooks cover common publishing workflows. |
+| Developer docs or knowledge base | Mermaid, math, code blocks, TOC, and heading ids are included. |
+| React + Vue product suite | One core API keeps behavior aligned across framework adapters. |
+
+## Compared With Common Choices
+
+| Editor choice | Best for | `pd-markdown-editor` difference |
+|---|---|---|
+| Plain `<textarea>` | Small forms and comments | Adds CodeMirror editing, commands, shortcuts, preview, plugins, and upload hooks. |
+| General React Markdown editors | Simple React-only editing | Adds Vue/Core adapters and technical-content plugins in the same repo. |
+| Headless Markdown parsers | Custom render pipelines | Adds an embeddable editor shell while keeping parser/render customization open. |
 
 ---
 
@@ -22,7 +52,7 @@ An embeddable Markdown editor SDK for **technical content, AI writing tools, and
 - 📦 **Bundle-conscious Defaults**: Optional fenced code language data for smaller default editor bundles.
 - 🌓 **Themes**: Beautiful GitHub-inspired Light and Dark modes.
 - 📊 **Split-View**: Real-time side-by-side editing and preview.
-- ⌨️ **Keyboard Shortcuts**: Rich set of standard Markdown formatting shortcuts.
+- ⌨️ **Editing Controls**: Standard Markdown shortcuts plus toolbar access to undo, redo, and search/replace.
 - 🎨 **Rich Typography**: Styled preview via `pd-markdown-ui`.
 
 ---
@@ -194,6 +224,19 @@ editor.isActive('bold');
 editor.canExecute('link');
 editor.getCommandState('heading2'); // { active, enabled }
 ```
+
+---
+
+## Roadmap
+
+The next high-impact items are intentionally product-facing:
+
+- Built-in lint panel for the Vue demo.
+- Upload progress and failure UI for image uploads.
+- Copy/export actions for Markdown and rendered HTML.
+- More recipes for Next.js, Vite, Nuxt, and CMS integrations.
+
+If this matches your use case, a GitHub star helps prioritize the next release.
 
 ---
 

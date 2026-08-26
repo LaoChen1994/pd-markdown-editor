@@ -201,6 +201,23 @@ describe("editor commands", () => {
     view.destroy();
   });
 
+  it("allows search in read-only editors", () => {
+    const parent = document.createElement("div");
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: "hello",
+        extensions: [EditorState.readOnly.of(true)],
+      }),
+      parent,
+    });
+
+    expect(canExecuteEditorCommand(view, "search")).toBe(true);
+    expect(executeEditorCommand(view, "search")).toBe(true);
+    expect(parent.querySelector(".cm-search")).not.toBeNull();
+
+    view.destroy();
+  });
+
   it("does not continue or indent markdown blocks in read-only editors", () => {
     const parent = document.createElement("div");
     const view = new EditorView({

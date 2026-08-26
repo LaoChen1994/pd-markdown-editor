@@ -20,11 +20,15 @@ const ICONS: Record<string, string> = {
   table: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm1 2v2h4V4H1zm5 0v2h4V4H6zm5 0v2h4V4h-4zM1 7v2h4V7H1zm5 0v2h4V7H6zm5 0v2h4V7h-4zM1 10v3a1 1 0 0 0 1 1h3v-4H1zm5 0v4h4v-4H6zm5 0v4h3a1 1 0 0 0 1-1v-3h-4z"/></svg>',
   undo: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a6 6 0 1 1-5.2 3H1.05A7 7 0 1 0 8 1v1zM3 6V2H2v5h5V6H3z"/></svg>',
   redo: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a6 6 0 1 0 5.2 3h1.75A7 7 0 1 1 8 1v1zm5 4V2h1v5H9V6h4z"/></svg>',
+  search: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7 2a5 5 0 1 0 3.54 8.54l3.46 3.46 1-1-3.46-3.46A5 5 0 0 0 7 2zm0 1.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z"/></svg>',
 };
 
 /** Default toolbar items configuration */
 export function getDefaultToolbarItems(): ToolbarItem[] {
   return [
+    { command: "undo", label: "Undo", icon: ICONS.undo, shortcut: "Ctrl+Z" },
+    { command: "redo", label: "Redo", icon: ICONS.redo, shortcut: "Ctrl+Shift+Z" },
+    { command: "divider", label: "", icon: "", divider: true },
     { command: "bold", label: "Bold", icon: ICONS.bold, shortcut: "Ctrl+B" },
     { command: "italic", label: "Italic", icon: ICONS.italic, shortcut: "Ctrl+I" },
     { command: "strikethrough", label: "Strikethrough", icon: ICONS.strikethrough, shortcut: "Ctrl+Shift+X" },
@@ -44,6 +48,8 @@ export function getDefaultToolbarItems(): ToolbarItem[] {
     { command: "codeBlock", label: "Code Block", icon: ICONS.codeBlock },
     { command: "table", label: "Table", icon: ICONS.table },
     { command: "horizontalRule", label: "Horizontal Rule", icon: ICONS.horizontalRule },
+    { command: "divider", label: "", icon: "", divider: true },
+    { command: "search", label: "Search and replace", icon: ICONS.search, shortcut: "Ctrl+F" },
   ];
 }
 
@@ -95,7 +101,10 @@ export function createToolbarElement(
     });
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (!btn.disabled) onCommand(item.command);
+      if (!btn.disabled) {
+        if (item.onClick) item.onClick();
+        else onCommand(item.command);
+      }
     });
 
     toolbar.appendChild(btn);

@@ -6,9 +6,11 @@ import { MarkdownRenderer } from "pd-markdown/web";
 import { MarkdownEditorComponent, markdownUiComponentMap } from "./MarkdownEditor";
 import type { MarkdownEditorInstance } from "pd-editor-core";
 
+const mermaidInitialize = vi.hoisted(() => vi.fn());
+
 vi.mock("mermaid", () => ({
   default: {
-    initialize: () => undefined,
+    initialize: mermaidInitialize,
     render: async () => ({ svg: "<svg>diagram</svg>" }),
   },
 }));
@@ -236,6 +238,7 @@ describe("React markdown UI adapter", () => {
         expect(container.querySelector(".pd-rendered-mermaid svg")).not.toBeNull();
       });
     });
+    expect(mermaidInitialize).toHaveBeenCalledWith(expect.objectContaining({ securityLevel: "strict" }));
 
     await act(async () => {
       root.unmount();

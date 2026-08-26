@@ -62,7 +62,7 @@ const editor = new MarkdownEditor({
 | Area | Included |
 | --- | --- |
 | Editing | Markdown language mode, history, search, folding, bracket matching, autocomplete |
-| Commands | Bold, italic, strikethrough, heading 1-3, link, image, unordered/ordered/task list, quote, inline code, code block, table, horizontal rule, undo, redo |
+| Commands | Bold, italic, strikethrough, heading 1-3, link, image, unordered/ordered/task list, quote, inline code, code block, table, horizontal rule, undo, redo, search/replace |
 | Typing flow | Continue list/task/ordered/quote on `Enter`; exit empty markers; indent/outdent block lines with `Tab` / `Shift+Tab` |
 | Toolbar | Default toolbar, custom toolbar items, plugin-provided toolbar items |
 | Plugins | Image upload, TOC, custom CM6 extensions, runtime install/remove |
@@ -83,6 +83,7 @@ const editor = new MarkdownEditor({
 | `Ctrl/Cmd+Shift+7` | Ordered list |
 | `Ctrl/Cmd+Shift+8` | Bullet list |
 | `Ctrl/Cmd+Shift+9` | Quote |
+| `Ctrl/Cmd+F` | Search and replace |
 | `Ctrl/Cmd+S` | `onSave` callback |
 | `Enter` | Continue Markdown list/task/ordered/quote block |
 | `Tab` | Indent Markdown block line |
@@ -92,7 +93,7 @@ const editor = new MarkdownEditor({
 
 The default toolbar includes:
 
-`bold`, `italic`, `strikethrough`, `heading1`, `heading2`, `heading3`, `unorderedList`, `orderedList`, `taskList`, `link`, `image`, `quote`, `code`, `codeBlock`, `table`, `horizontalRule`.
+`undo`, `redo`, `bold`, `italic`, `strikethrough`, `heading1`, `heading2`, `heading3`, `unorderedList`, `orderedList`, `taskList`, `link`, `image`, `quote`, `code`, `codeBlock`, `table`, `horizontalRule`, `search`.
 
 Disable it:
 

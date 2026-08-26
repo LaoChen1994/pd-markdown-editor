@@ -17,6 +17,33 @@ const flushPromises = async (): Promise<void> => {
 };
 
 describe("imageUploadPlugin", () => {
+  it("opens a file picker from the toolbar and uploads selected files", async () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      plugins: [imageUploadPlugin({ handler: async () => "https://cdn.example.com/picked.png" })],
+    });
+    const input = document.body.querySelector<HTMLInputElement>('input[type="file"]');
+    let pickerClicks = 0;
+    input?.addEventListener("click", () => {
+      pickerClicks += 1;
+    });
+
+    parent.querySelector<HTMLButtonElement>('[data-command="image-upload"]')?.click();
+    expect(pickerClicks).toBe(1);
+
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: [new File(["content"], "picked.png", { type: "image/png" })],
+    });
+    input?.dispatchEvent(new Event("change"));
+    await flushPromises();
+
+    expect(editor.getValue()).toBe("![picked.png](https://cdn.example.com/picked.png)");
+    editor.destroy();
+    expect(document.body.contains(input)).toBe(false);
+  });
+
   it("replaces only the matching placeholder for concurrent files with the same name", async () => {
     const parent = document.createElement("div");
     const resolvers: ((url: string) => void)[] = [];

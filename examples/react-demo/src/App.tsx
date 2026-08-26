@@ -119,8 +119,14 @@ const App = () => {
             Build docs, AI writing tools, and CMS workflows with portable Markdown, live Mermaid diagrams, math, frontmatter, linting, and image upload.
           </p>
           <div className="demo-links" aria-label="Project links">
-            <a href="https://github.com/LaoChen1994/pd-markdown-editor">GitHub</a>
-            <a href="https://www.npmjs.com/package/pd-editor-react">npm package</a>
+            <a href="https://github.com/LaoChen1994/pd-markdown-editor">Star on GitHub</a>
+            <a href="https://www.npmjs.com/package/pd-editor-react">React npm</a>
+            <a href="https://www.npmjs.com/package/pd-editor-vue">Vue npm</a>
+          </div>
+          <div className="demo-proof" aria-label="Editor highlights">
+            <span>React + Vue + Core</span>
+            <span>Mermaid strict mode</span>
+            <span>Lint, TOC, upload</span>
           </div>
         </div>
 
@@ -209,19 +215,27 @@ const App = () => {
           )}
         </article>
 
-        <article className="demo-panel demo-panel-wide">
+        <article className="demo-panel demo-panel-lint demo-panel-wide">
           <div className="demo-panel-header">
-            <h2>Lint Diagnostics</h2>
+            <h2>Markdown Lint</h2>
             <span>{diagnostics.length}</span>
           </div>
+          <div className="demo-lint-summary">
+            <strong>{diagnostics.length === 0 ? "Ready to publish" : `${diagnostics.length} issues found`}</strong>
+            <span>Alt text, empty links, heading jumps, and duplicate heading ids.</span>
+          </div>
           {diagnostics.length === 0 ? (
-            <p>None</p>
+            <p>No lint warnings in this draft.</p>
           ) : (
             <ul className="demo-diagnostics">
               {diagnostics.map((diagnostic, index) => (
                 <li key={`${diagnostic.rule}-${index}`}>
-                  <strong>{diagnostic.rule}</strong>
-                  <span>{diagnostic.message}</span>
+                  <div className="demo-diagnostic-meta">
+                    <strong>{diagnostic.severity}</strong>
+                    <span>{diagnostic.position?.start.line ? `Line ${diagnostic.position.start.line}` : "Document"}</span>
+                    <code>{diagnostic.rule}</code>
+                  </div>
+                  <p>{diagnostic.message}</p>
                 </li>
               ))}
             </ul>
