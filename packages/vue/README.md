@@ -95,9 +95,11 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 | `theme` | `"light" \| "dark"` | `"light"` | Editor and preview theme |
 | `placeholder` | `string` | - | CodeMirror placeholder |
 | `readOnly` | `boolean` | `false` | Prevent user and command edits |
+| `maxLength` | `number` | - | Maximum document length |
 | `height` | `string \| number` | `"500px"` | Editor container height |
 | `preview` | `"edit" \| "preview" \| "split"` | `"edit"` | View mode |
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` | Built-in toolbar, hidden toolbar, or custom items |
+| `labels` | `EditorLabels` | - | Toolbar labels keyed by command |
 | `plugins` | `EditorPlugin[]` | `[]` | Core plugins |
 | `extensions` | `Extension[]` | `[]` | CodeMirror 6 extensions |
 | `codeLanguages` | `MarkdownCodeLanguages` | - | Optional fenced code language resolver for the editor |
@@ -107,6 +109,31 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 | --- | --- | --- |
 | `update:modelValue` | `string` | Emitted when content changes |
 | `save` | `string` | Emitted by `Ctrl/Cmd+S` |
+
+`modelValue`, `theme`, `readOnly`, `maxLength`, `preview`, `toolbar`, and `labels` update after mount. `placeholder`, `plugins`, `extensions`, and `codeLanguages` are initialization options.
+
+## Component Ref And Export Actions
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import type { MarkdownEditorHandle } from "pd-editor-vue";
+
+const editorRef = ref<MarkdownEditorHandle | null>(null);
+
+const exportNotes = async () => {
+  await editorRef.value?.copyMarkdown();
+  await editorRef.value?.copyHtml();
+  editorRef.value?.downloadMarkdown("notes.md");
+};
+</script>
+
+<template>
+  <MarkdownEditor ref="editorRef" v-model="content" preview="split" />
+</template>
+```
+
+The exposed ref also provides `getValue()`, `getCharacterCount()`, and `focus()`. `copyHtml()` copies the currently mounted preview HTML.
 
 ## Preview Modes
 
@@ -185,17 +212,21 @@ const content = ref("");
 const plugins = computed(() => [
   imageUploadPlugin({
     maxSize: 5 * 1024 * 1024,
-    handler: async (file) => {
+    handler: async (file, { signal }) => {
       const form = new FormData();
       form.append("file", file);
 
       const response = await fetch("/api/upload", {
         method: "POST",
         body: form,
+        signal,
       });
 
       const data = await response.json() as { url: string };
       return data.url;
+    },
+    onStatusChange: ({ status, progress, cancel, retry }) => {
+      console.log(status, progress, cancel, retry);
     },
   }),
 ]);
@@ -289,7 +320,7 @@ const logValue = () => {
 </template>
 ```
 
-Initialization options are read when the editor mounts. Structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, `extensions`, and `codeLanguages` are not rebuilt automatically. Recreate the composable owner when those structural options need to change.
+Composable options are read when its owner mounts. Recreate the composable owner when initialization options need to change; use the component when reactive prop updates are required.
 
 ## SSR / Nuxt
 

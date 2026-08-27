@@ -99,15 +99,38 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 | `theme` | `"light" \| "dark"` | `"light"` | Editor and preview theme |
 | `placeholder` | `string` | - | CodeMirror placeholder |
 | `readOnly` | `boolean` | `false` | Prevent user and command edits |
+| `maxLength` | `number` | - | Maximum document length |
 | `height` | `string \| number` | `"500px"` | Editor container height |
 | `preview` | `"edit" \| "preview" \| "split"` | `"edit"` | View mode |
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` | Built-in toolbar, hidden toolbar, or custom items |
+| `labels` | `EditorLabels` | - | Toolbar labels keyed by command |
 | `plugins` | `EditorPlugin[]` | `[]` | Core plugins |
 | `extensions` | `Extension[]` | `[]` | CodeMirror 6 extensions |
 | `codeLanguages` | `MarkdownCodeLanguages` | - | Optional fenced code language resolver for the editor |
 | `renderComponentMap` | `Partial<ComponentMap>` | - | Override Markdown preview components |
 | `className` | `string` | `""` | Outer container class |
 | `style` | `React.CSSProperties` | `{}` | Outer container style |
+
+`value`, `theme`, `readOnly`, `maxLength`, `preview`, `toolbar`, and `labels` update after mount. `placeholder`, `plugins`, `extensions`, and `codeLanguages` are initialization options.
+
+## Ref And Export Actions
+
+```tsx
+import { useRef } from "react";
+import { MarkdownEditor } from "pd-editor-react";
+import type { MarkdownEditorHandle } from "pd-editor-react";
+
+const editorRef = useRef<MarkdownEditorHandle>(null);
+
+<MarkdownEditor ref={editorRef} defaultValue="# Notes" preview="split" />;
+
+await editorRef.current?.copyMarkdown();
+await editorRef.current?.copyHtml();
+editorRef.current?.downloadMarkdown("notes.md");
+editorRef.current?.getCharacterCount();
+```
+
+`copyHtml()` copies the currently mounted preview HTML, so use it in `preview` or `split` mode.
 
 ## Preview Modes
 
@@ -182,17 +205,21 @@ export const EditorWithUpload = () => {
   const plugins = useMemo(() => [
     imageUploadPlugin({
       maxSize: 5 * 1024 * 1024,
-      handler: async (file) => {
+      handler: async (file, { signal }) => {
         const form = new FormData();
         form.append("file", file);
 
         const response = await fetch("/api/upload", {
           method: "POST",
           body: form,
+          signal,
         });
 
         const data = await response.json() as { url: string };
         return data.url;
+      },
+      onStatusChange: ({ status, progress, cancel, retry }) => {
+        console.log(status, progress, cancel, retry);
       },
     }),
   ], []);
@@ -286,7 +313,7 @@ export const CustomShell = () => {
 };
 ```
 
-Initialization options are read when the editor mounts. `theme` and `readOnly` are synchronized after mount; structural options such as `initialValue`, `placeholder`, `toolbar`, `plugins`, `extensions`, and `codeLanguages` are not rebuilt automatically. Recreate the hook owner when those structural options need to change.
+`theme`, `readOnly`, `maxLength`, `toolbar`, and `labels` are synchronized after mount. `initialValue`, `placeholder`, `plugins`, `extensions`, and `codeLanguages` are initialization options; recreate the hook owner when they need to change.
 
 ## SSR / Next.js
 

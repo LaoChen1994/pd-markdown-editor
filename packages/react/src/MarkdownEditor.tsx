@@ -1,9 +1,14 @@
-import React, { useRef, useEffect, useState } from "react";
-import { MarkdownEditor as CoreEditor } from "pd-editor-core";
+import React, { useRef, useEffect, useImperativeHandle, useState } from "react";
+import {
+  copyHtml as copyHtmlToClipboard,
+  copyMarkdown as copyMarkdownToClipboard,
+  downloadMarkdown as downloadMarkdownFile,
+  MarkdownEditor as CoreEditor,
+} from "pd-editor-core";
 import { MarkdownRenderer } from "pd-markdown/web";
 import katex from "katex";
 
-import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { EditorLabels, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { ComponentMap } from "pd-markdown/web";
 
 const styledTag = (tag: React.ElementType, baseClass: string): React.FC<React.HTMLAttributes<HTMLElement>> =>
@@ -247,24 +252,38 @@ export interface MarkdownEditorProps {
   placeholder?: string;
   /** Read-only mode */
   readOnly?: boolean;
+  /** Maximum document length */
+  maxLength?: number;
   /** Height of the editor */
   height?: string | number;
   /** View mode: edit only, preview only, or split */
   preview?: "edit" | "preview" | "split";
   /** Toolbar config */
   toolbar?: boolean | ToolbarItem[];
-  /** Editor plugins */
+  /** Toolbar labels keyed by command */
+  labels?: EditorLabels;
+  /** Editor plugins. Read during editor initialization. */
   plugins?: EditorPlugin[];
   /** Custom CSS class */
   className?: string;
   /** Custom inline styles */
   style?: React.CSSProperties;
-  /** Custom CM6 extensions */
+  /** Custom CM6 extensions. Read during editor initialization. */
   extensions?: Extension[];
-  /** Optional fenced code language resolver for the CodeMirror editor */
+  /** Optional fenced code language resolver. Read during editor initialization. */
   codeLanguages?: MarkdownCodeLanguages;
   /** Custom component overrides for Markdown rendering */
   renderComponentMap?: Partial<ComponentMap>;
+}
+
+export interface MarkdownEditorHandle {
+  getValue: () => string;
+  getCharacterCount: () => number;
+  focus: () => void;
+  copyMarkdown: () => Promise<void>;
+  /** Copies the currently mounted preview HTML. */
+  copyHtml: () => Promise<void>;
+  downloadMarkdown: (filename?: string) => void;
 }
 
 /**
@@ -273,7 +292,7 @@ export interface MarkdownEditorProps {
  * Supports controlled (value+onChange) and uncontrolled (defaultValue) modes,
  * with optional split-view preview powered by pd-markdown + pd-markdown-ui.
  */
-export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
+export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(({
   value,
   defaultValue = "",
   onChange,
@@ -281,16 +300,18 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   theme = "light",
   placeholder,
   readOnly = false,
+  maxLength,
   height = "500px",
   preview = "edit",
   toolbar = true,
+  labels,
   plugins = [],
   className = "",
   style = {},
   extensions = [],
   codeLanguages,
   renderComponentMap,
-}) => {
+}, ref) => {
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CoreEditor | null>(null);
@@ -299,10 +320,12 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   const latestValueRef = useRef(isControlled ? (value ?? "") : defaultValue);
   const onChangeRef = useRef(onChange);
   const onSaveRef = useRef(onSave);
+  const previewModeRef = useRef(preview);
   const [previewContent, setPreviewContent] = useState("");
 
   onChangeRef.current = onChange;
   onSaveRef.current = onSave;
+  previewModeRef.current = preview;
 
   // Merge pd-markdown-ui components with user overrides
   const mergedComponents = React.useMemo(
@@ -330,6 +353,7 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
   // Initialize editor
   useEffect(() => {
     if (!editorContainerRef.current) return;
+    if (editorRef.current) return;
     if (preview === "preview") return; // No editor in preview-only mode
 
     const editor = new CoreEditor({
@@ -339,33 +363,30 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       onChange: (v) => {
         latestValueRef.current = v;
         onChangeRef.current?.(v);
-        if (preview === "split") {
+        if (previewModeRef.current === "split") {
           setPreviewContent(v);
         }
       },
       onSave: (v) => onSaveRef.current?.(v),
       placeholder,
       readOnly,
+      maxLength,
       extensions,
       codeLanguages,
       plugins,
       toolbar,
+      labels,
     });
 
     editorRef.current = editor;
+  }, [preview]);
 
-    // Initial preview
-    if (preview === "split") {
-      const initVal = isControlled ? (value ?? "") : latestValueRef.current;
-      setPreviewContent(initVal);
-    }
-
+  useEffect(() => {
     return () => {
-      editor.destroy();
+      editorRef.current?.destroy();
       editorRef.current = null;
     };
-
-  }, [preview]);
+  }, []);
 
   useEffect(() => {
     editorRef.current?.setTheme(theme);
@@ -375,6 +396,23 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
     editorRef.current?.setReadOnly(readOnly);
   }, [readOnly]);
 
+  useEffect(() => {
+    editorRef.current?.setMaxLength(maxLength);
+  }, [maxLength]);
+
+  useEffect(() => {
+    editorRef.current?.setToolbar(toolbar, labels);
+  }, [toolbar, labels]);
+
+  useImperativeHandle(ref, () => ({
+    getValue: () => editorRef.current?.getValue() ?? latestValueRef.current,
+    getCharacterCount: () => editorRef.current?.getCharacterCount() ?? latestValueRef.current.length,
+    focus: () => editorRef.current?.focus(),
+    copyMarkdown: () => copyMarkdownToClipboard(editorRef.current?.getValue() ?? latestValueRef.current),
+    copyHtml: () => copyHtmlToClipboard(previewRef.current?.innerHTML ?? ""),
+    downloadMarkdown: (filename) => downloadMarkdownFile(editorRef.current?.getValue() ?? latestValueRef.current, filename),
+  }), []);
+
   // Sync controlled value
   useEffect(() => {
     if (isControlled && editorRef.current) {
@@ -382,20 +420,22 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       if (current !== value) {
         editorRef.current.setValue(value ?? "", { emitChange: false });
       }
-      latestValueRef.current = value ?? "";
+      latestValueRef.current = editorRef.current.getValue();
       if (preview === "split") {
-        setPreviewContent(value ?? "");
+        setPreviewContent(editorRef.current.getValue());
       }
     }
-  }, [value, isControlled, preview]);
+  }, [value, isControlled, preview, maxLength]);
 
-  // Preview-only mode
+  // Keep preview content current when entering preview or split mode
   useEffect(() => {
-    if (preview === "preview") {
-      const content = isControlled ? (value ?? "") : defaultValue;
+    if (preview !== "edit") {
+      const source = isControlled ? (value ?? "") : latestValueRef.current;
+      const content = editorRef.current?.getValue()
+        ?? (maxLength === undefined ? source : source.slice(0, Math.max(0, maxLength)));
       setPreviewContent(content);
     }
-  }, [preview, value, defaultValue, isControlled]);
+  }, [preview, value, isControlled, maxLength]);
 
   useEffect(() => {
     if (preview !== "split") return;
@@ -442,18 +482,16 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
 
   return (
     <div className={`pd-editor-react ${className}`} data-preview={preview} style={containerStyle}>
-      {preview !== "preview" && (
-        <div
-          ref={editorContainerRef}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        />
-      )}
+      <div
+        ref={editorContainerRef}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          overflow: "hidden",
+          display: preview === "preview" ? "none" : "flex",
+          flexDirection: "column",
+        }}
+      />
       {(preview === "split" || preview === "preview") && (
         <div
           ref={previewRef}
@@ -474,4 +512,6 @@ export const MarkdownEditorComponent: React.FC<MarkdownEditorProps> = ({
       )}
     </div>
   );
-};
+});
+
+MarkdownEditorComponent.displayName = "MarkdownEditor";

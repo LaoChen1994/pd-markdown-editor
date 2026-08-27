@@ -3,7 +3,7 @@ import type { EditorPlugin, ToolbarItem, MarkdownEditorInstance } from "../types
 
 export interface ImageUploadPluginOptions {
   /** Upload handler returning the image URL */
-  handler: (file: File) => Promise<string>;
+  handler: (file: File, context: ImageUploadContext) => Promise<string>;
   /** Accepted file types, default ['image/*'] */
   accept?: string[];
   /** Max file size in bytes */
@@ -16,21 +16,141 @@ export interface ImageUploadPluginOptions {
   onReject?: (file: File, reason: "type" | "size") => void;
   /** Called when the upload handler throws */
   onError?: (error: unknown, file: File) => void;
+  /** Called when upload status or progress changes */
+  onStatusChange?: (update: ImageUploadUpdate) => void;
+  /** Toolbar button label */
+  label?: string;
+}
+
+export interface ImageUploadContext {
+  /** Abort signal for cancelling the current upload attempt */
+  signal: AbortSignal;
+  /** Report upload progress from 0 to 100 */
+  reportProgress: (progress: number) => void;
+}
+
+export type ImageUploadStatus = "uploading" | "success" | "error" | "cancelled";
+
+export interface ImageUploadUpdate {
+  id: number;
+  file: File;
+  status: ImageUploadStatus;
+  progress: number;
+  url?: string;
+  error?: unknown;
+  cancel?: () => void;
+  retry?: () => void;
+}
+
+interface ImageUploadTask {
+  id: number;
+  file: File;
+  marker: string;
+  controller: AbortController;
+  attempt: number;
+  status: ImageUploadStatus;
 }
 
 export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlugin {
-  const { handler, accept = ["image/*"], maxSize, pasteUpload = true, dragUpload = true, onReject, onError } = options;
+  const {
+    handler,
+    accept = ["image/*"],
+    maxSize,
+    pasteUpload = true,
+    dragUpload = true,
+    onReject,
+    onError,
+    onStatusChange,
+    label = "Upload Image",
+  } = options;
   let uploadId = 0;
   let fileInput: HTMLInputElement | null = null;
+  let destroyed = false;
+  const uploads = new Map<number, ImageUploadTask>();
 
-  function isAccepted(file: File): boolean {
+  const isAccepted = (file: File): boolean => {
     return accept.some(a => {
       if (a === "image/*") return file.type.startsWith("image/");
       return file.type === a;
     });
-  }
+  };
 
-  async function uploadFile(file: File, editor: MarkdownEditorInstance): Promise<void> {
+  const replaceMarker = (editor: MarkdownEditorInstance, current: string, replacement: string): void => {
+    const value = editor.getValue();
+    editor.setValue(value.replace(current, replacement));
+  };
+
+  const runUpload = async (
+    upload: ImageUploadTask,
+    editor: MarkdownEditorInstance
+  ): Promise<void> => {
+    if (destroyed) return;
+    upload.attempt += 1;
+    const attempt = upload.attempt;
+    upload.controller = new AbortController();
+    upload.status = "uploading";
+    const uploadingMarker = `![Uploading ${upload.file.name}...](pd-editor-upload-${upload.id})`;
+    if (upload.marker !== uploadingMarker) {
+      replaceMarker(editor, upload.marker, uploadingMarker);
+      upload.marker = uploadingMarker;
+    }
+
+    const cancel = (): void => {
+      if (upload.status !== "uploading" || upload.attempt !== attempt) return;
+      upload.controller.abort();
+      upload.status = "cancelled";
+      const cancelledMarker = `![Upload cancelled: ${upload.file.name}](pd-editor-upload-${upload.id})`;
+      replaceMarker(editor, upload.marker, cancelledMarker);
+      upload.marker = cancelledMarker;
+      onStatusChange?.({
+        id: upload.id,
+        file: upload.file,
+        status: "cancelled",
+        progress: 0,
+        retry: () => { void runUpload(upload, editor); },
+      });
+    };
+
+    onStatusChange?.({ id: upload.id, file: upload.file, status: "uploading", progress: 0, cancel });
+
+    try {
+      const url = await handler(upload.file, {
+        signal: upload.controller.signal,
+        reportProgress: (progress) => {
+          if (destroyed || upload.status !== "uploading" || upload.attempt !== attempt) return;
+          onStatusChange?.({
+            id: upload.id,
+            file: upload.file,
+            status: "uploading",
+            progress: Math.min(100, Math.max(0, progress)),
+            cancel,
+          });
+        },
+      });
+      if (destroyed || upload.status !== "uploading" || upload.attempt !== attempt) return;
+      upload.status = "success";
+      replaceMarker(editor, upload.marker, `![${upload.file.name}](${url})`);
+      uploads.delete(upload.id);
+      onStatusChange?.({ id: upload.id, file: upload.file, status: "success", progress: 100, url });
+    } catch (error) {
+      if (destroyed || upload.status !== "uploading" || upload.attempt !== attempt) return;
+      upload.status = "error";
+      onError?.(error, upload.file);
+      const failedMarker = `![Upload failed: ${upload.file.name}](pd-editor-upload-${upload.id})`;
+      replaceMarker(editor, upload.marker, failedMarker);
+      upload.marker = failedMarker;
+      onStatusChange?.({
+        id: upload.id,
+        file: upload.file,
+        status: "error",
+        progress: 0,
+        error,
+        retry: () => { void runUpload(upload, editor); },
+      });
+    }
+  };
+
+  const uploadFile = async (file: File, editor: MarkdownEditorInstance): Promise<void> => {
     if (!isAccepted(file)) {
       onReject?.(file, "type");
       return;
@@ -41,21 +161,19 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     }
 
     uploadId += 1;
-    const placeholder = `![Uploading ${file.name}...](pd-editor-upload-${uploadId})`;
-    editor.insertAtCursor(placeholder);
-
-    try {
-      const url = await handler(file);
-      const current = editor.getValue();
-      const updated = current.replace(placeholder, `![${file.name}](${url})`);
-      editor.setValue(updated);
-    } catch (error) {
-      onError?.(error, file);
-      const current = editor.getValue();
-      const updated = current.replace(placeholder, `![Upload failed: ${file.name}]()`);
-      editor.setValue(updated);
-    }
-  }
+    const marker = `![Uploading ${file.name}...](pd-editor-upload-${uploadId})`;
+    const upload: ImageUploadTask = {
+      id: uploadId,
+      file,
+      marker,
+      controller: new AbortController(),
+      attempt: 0,
+      status: "uploading",
+    };
+    uploads.set(upload.id, upload);
+    editor.insertAtCursor(marker);
+    await runUpload(upload, editor);
+  };
 
   let editorRef: MarkdownEditorInstance | null = null;
 
@@ -63,6 +181,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     name: "image-upload",
 
     install(editor) {
+      destroyed = false;
       editorRef = editor;
       const extensions = [];
       fileInput = document.createElement("input");
@@ -116,13 +235,16 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     toolbar(): ToolbarItem {
       return {
         command: "image-upload",
-        label: "Upload Image",
+        label,
         icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm-1 10H3l3-4 1.5 2L10 7l3 5zM5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>',
         onClick: () => fileInput?.click(),
       };
     },
 
     destroy() {
+      destroyed = true;
+      for (const upload of uploads.values()) upload.controller.abort();
+      uploads.clear();
       editorRef = null;
       fileInput?.remove();
       fileInput = null;

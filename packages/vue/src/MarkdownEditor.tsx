@@ -1,8 +1,13 @@
 import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick, h } from "vue";
 import { MarkdownEditor as CoreEditor } from "pd-editor-core";
+import {
+  copyHtml as copyHtmlToClipboard,
+  copyMarkdown as copyMarkdownToClipboard,
+  downloadMarkdown as downloadMarkdownFile,
+} from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
 import katex from "katex";
-import type { EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { EditorLabels, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Component, PropType, VNode, VNodeChild } from "vue";
 
 /** Simplified AST node shape (compatible with mdast Root/Content) */
@@ -26,6 +31,16 @@ interface AstNode {
 }
 
 type JsxRenderable = (props: Record<string, unknown> & { children?: VNodeChild | (() => VNodeChild) }) => VNode;
+
+export interface MarkdownEditorHandle {
+  getValue: () => string;
+  getCharacterCount: () => number;
+  focus: () => void;
+  copyMarkdown: () => Promise<void>;
+  /** Copies the currently mounted preview HTML. */
+  copyHtml: () => Promise<void>;
+  downloadMarkdown: (filename?: string) => void;
+}
 
 const styledTag = (tag: string, baseClass: string) => defineComponent({
   inheritAttrs: false,
@@ -479,17 +494,22 @@ export const MarkdownEditor = defineComponent({
     theme: { type: String as PropType<"light" | "dark">, default: "light" },
     placeholder: { type: String, default: undefined },
     readOnly: { type: Boolean, default: false },
+    maxLength: { type: Number, default: undefined },
     height: { type: [String, Number], default: "500px" },
     preview: { type: String as PropType<"edit" | "preview" | "split">, default: "edit" },
     toolbar: { type: [Boolean, Array] as PropType<boolean | ToolbarItem[]>, default: true },
+    labels: { type: Object as PropType<EditorLabels>, default: undefined },
+    /** Read during editor initialization. */
     plugins: { type: Array as PropType<EditorPlugin[]>, default: () => [] },
+    /** Read during editor initialization. */
     extensions: { type: Array as PropType<Extension[]>, default: () => [] },
+    /** Read during editor initialization. */
     codeLanguages: { type: [Array, Function] as PropType<MarkdownCodeLanguages>, default: undefined },
     /** Custom component overrides for Markdown rendering */
     renderComponentMap: { type: Object as PropType<Record<string, unknown>>, default: undefined },
   },
   emits: ["update:modelValue", "save"],
-  setup(props, { emit }) {
+  setup(props, { emit, expose }) {
     const editorContainerRef = ref<HTMLDivElement | null>(null);
     const previewRef = ref<HTMLDivElement | null>(null);
     const editorRef = ref<CoreEditor | null>(null);
@@ -524,7 +544,7 @@ export const MarkdownEditor = defineComponent({
       if (!editorContainerRef.value || props.preview === "preview") {
         if (props.preview === "preview") {
           const content = isControlled.value ? (props.modelValue ?? "") : latestValue.value;
-          updatePreview(content);
+          updatePreview(props.maxLength === undefined ? content : content.slice(0, Math.max(0, props.maxLength)));
         }
         return;
       }
@@ -543,17 +563,18 @@ export const MarkdownEditor = defineComponent({
         onSave: (v: string) => emit("save", v),
         placeholder: props.placeholder,
         readOnly: props.readOnly,
+        maxLength: props.maxLength,
         extensions: props.extensions,
         codeLanguages: props.codeLanguages,
         plugins: props.plugins,
         toolbar: props.toolbar,
+        labels: props.labels,
       });
 
       editorRef.value = editor;
 
       if (props.preview === "split") {
-        const initVal = isControlled.value ? (props.modelValue ?? "") : latestValue.value;
-        updatePreview(initVal);
+        updatePreview(editor.getValue());
       }
     };
 
@@ -598,18 +619,19 @@ export const MarkdownEditor = defineComponent({
 
     // Sync controlled value
     watch(() => props.modelValue, (newVal) => {
+      let content = newVal ?? "";
       if (isControlled.value && editorRef.value) {
         const current = editorRef.value.getValue();
         if (current !== newVal) {
           editorRef.value.setValue(newVal ?? "", { emitChange: false });
         }
-        latestValue.value = newVal ?? "";
+        content = editorRef.value.getValue();
+        latestValue.value = content;
+      } else if (props.maxLength !== undefined) {
+        content = content.slice(0, Math.max(0, props.maxLength));
       }
-      if (props.preview === "split") {
-        updatePreview(newVal ?? "");
-      }
-      if (props.preview === "preview") {
-        updatePreview(newVal ?? "");
+      if (props.preview !== "edit") {
+        updatePreview(content);
       }
     });
 
@@ -619,6 +641,18 @@ export const MarkdownEditor = defineComponent({
 
     watch(() => props.readOnly, (readOnly) => {
       editorRef.value?.setReadOnly(readOnly);
+    });
+
+    watch(() => props.maxLength, (maxLength) => {
+      editorRef.value?.setMaxLength(maxLength);
+      const content = editorRef.value?.getValue()
+        ?? (maxLength === undefined ? latestValue.value : latestValue.value.slice(0, Math.max(0, maxLength)));
+      latestValue.value = content;
+      if (props.preview !== "edit") updatePreview(content);
+    });
+
+    watch(() => [props.toolbar, props.labels] as const, ([toolbar, labels]) => {
+      editorRef.value?.setToolbar(toolbar, labels);
     });
 
     watch(() => props.preview, async (preview) => {
@@ -639,6 +673,15 @@ export const MarkdownEditor = defineComponent({
       editorRef.value?.destroy();
       editorRef.value = null;
     });
+
+    expose({
+      getValue: () => editorRef.value?.getValue() ?? latestValue.value,
+      getCharacterCount: () => editorRef.value?.getCharacterCount() ?? latestValue.value.length,
+      focus: () => editorRef.value?.focus(),
+      copyMarkdown: () => copyMarkdownToClipboard(editorRef.value?.getValue() ?? latestValue.value),
+      copyHtml: () => copyHtmlToClipboard(previewRef.value?.innerHTML ?? ""),
+      downloadMarkdown: (filename?: string) => downloadMarkdownFile(editorRef.value?.getValue() ?? latestValue.value, filename),
+    } satisfies MarkdownEditorHandle);
 
     return () => {
       const isDark = props.theme === "dark";

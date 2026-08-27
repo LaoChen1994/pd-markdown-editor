@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
-import { MarkdownEditor } from "pd-editor-core";
-import type { MarkdownEditorOptions, EditorCommand, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import { copyMarkdown, downloadMarkdown, MarkdownEditor } from "pd-editor-core";
+import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 
 export interface UseMarkdownEditorOptions {
   initialValue?: string;
@@ -9,10 +9,12 @@ export interface UseMarkdownEditorOptions {
   onSave?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  maxLength?: number;
   extensions?: Extension[];
   codeLanguages?: MarkdownCodeLanguages;
   plugins?: EditorPlugin[];
   toolbar?: boolean | MarkdownEditorOptions["toolbar"];
+  labels?: EditorLabels;
 }
 
 export interface UseMarkdownEditorReturn {
@@ -28,6 +30,12 @@ export interface UseMarkdownEditorReturn {
   executeCommand: (command: EditorCommand | string) => void;
   /** Focus the editor */
   focus: () => void;
+  /** Current document character count */
+  getCharacterCount: () => number;
+  /** Copy current Markdown source */
+  copyMarkdown: () => Promise<void>;
+  /** Download current Markdown source */
+  downloadMarkdown: (filename?: string) => void;
 }
 
 /**
@@ -55,10 +63,12 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       onSave: (v) => onSaveRef.current?.(v),
       placeholder: options.placeholder,
       readOnly: options.readOnly,
+      maxLength: options.maxLength,
       extensions: options.extensions,
       codeLanguages: options.codeLanguages,
       plugins: options.plugins,
       toolbar: options.toolbar,
+      labels: options.labels,
     });
 
     editorRef.current = editor;
@@ -79,10 +89,31 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
     editorRef.current?.setReadOnly(options.readOnly ?? false);
   }, [options.readOnly]);
 
+  useEffect(() => {
+    editorRef.current?.setMaxLength(options.maxLength);
+  }, [options.maxLength]);
+
+  useEffect(() => {
+    editorRef.current?.setToolbar(options.toolbar ?? true, options.labels);
+  }, [options.toolbar, options.labels]);
+
   const getValue = useCallback(() => editorRef.current?.getValue() ?? "", []);
   const setValue = useCallback((v: string) => editorRef.current?.setValue(v), []);
   const executeCommand = useCallback((cmd: EditorCommand | string) => editorRef.current?.executeCommand(cmd), []);
   const focus = useCallback(() => editorRef.current?.focus(), []);
+  const getCharacterCount = useCallback(() => editorRef.current?.getCharacterCount() ?? 0, []);
+  const copyCurrentMarkdown = useCallback(() => copyMarkdown(editorRef.current?.getValue() ?? ""), []);
+  const downloadCurrentMarkdown = useCallback((filename?: string) => downloadMarkdown(editorRef.current?.getValue() ?? "", filename), []);
 
-  return { containerRef, editorRef, getValue, setValue, executeCommand, focus };
+  return {
+    containerRef,
+    editorRef,
+    getValue,
+    setValue,
+    executeCommand,
+    focus,
+    getCharacterCount,
+    copyMarkdown: copyCurrentMarkdown,
+    downloadMarkdown: downloadCurrentMarkdown,
+  };
 }

@@ -5,6 +5,7 @@ export { MarkdownEditor } from "./editor";
 export type {
   EditorCommand,
   EditorCommandState,
+  EditorLabels,
   ToolbarItem,
   EditorPlugin,
   ToolbarContext,
@@ -32,6 +33,9 @@ export {
 // Toolbar
 export { getDefaultToolbarItems, createToolbarElement } from "./toolbar";
 
+// Export
+export { copyHtml, copyMarkdown, downloadMarkdown } from "./export";
+
 // Themes
 export { createLightTheme, createDarkTheme } from "./themes";
 
@@ -45,7 +49,12 @@ export type { CodeBlockInfo, CodeHighlightPluginOptions } from "./plugins/code-h
 export { frontmatterPlugin, parseFrontmatter } from "./plugins/frontmatter";
 export type { FrontmatterPluginOptions, FrontmatterResult, FrontmatterValue } from "./plugins/frontmatter";
 export { imageUploadPlugin } from "./plugins/image-upload";
-export type { ImageUploadPluginOptions } from "./plugins/image-upload";
+export type {
+  ImageUploadContext,
+  ImageUploadPluginOptions,
+  ImageUploadStatus,
+  ImageUploadUpdate,
+} from "./plugins/image-upload";
 export { markdownLintPlugin, lintMarkdown } from "./plugins/markdown-lint";
 export type { MarkdownDiagnostic, MarkdownLintPluginOptions, MarkdownLintRule } from "./plugins/markdown-lint";
 export { mathPlugin, extractMathExpressions } from "./plugins/math";

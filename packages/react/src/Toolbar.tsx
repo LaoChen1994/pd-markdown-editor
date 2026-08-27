@@ -1,5 +1,5 @@
 import React from "react";
-import type { EditorCommand, ToolbarItem } from "pd-editor-core";
+import type { EditorCommand, EditorLabels, ToolbarItem } from "pd-editor-core";
 import { getDefaultToolbarItems } from "pd-editor-core";
 
 export interface ToolbarProps {
@@ -9,6 +9,8 @@ export interface ToolbarProps {
   onCommand: (command: EditorCommand | string) => void;
   /** Theme for styling */
   theme?: "light" | "dark";
+  /** Labels keyed by command */
+  labels?: EditorLabels;
 }
 
 /**
@@ -19,8 +21,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   items,
   onCommand,
   theme = "light",
+  labels,
 }) => {
-  const toolbarItems = items ?? getDefaultToolbarItems();
+  const toolbarItems = items ?? getDefaultToolbarItems(labels);
   const isDark = theme === "dark";
 
   return (

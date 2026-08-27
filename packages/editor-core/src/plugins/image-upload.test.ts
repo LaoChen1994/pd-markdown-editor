@@ -137,8 +137,94 @@ describe("imageUploadPlugin", () => {
     await flushPromises();
 
     expect(errors).toEqual([error]);
-    expect(editor.getValue()).toBe("![Upload failed: broken.png]()");
+    expect(editor.getValue()).toBe("![Upload failed: broken.png](pd-editor-upload-1)");
 
+    editor.destroy();
+  });
+
+  it("reports progress and completion", async () => {
+    const parent = document.createElement("div");
+    const updates: Array<{ status: string; progress: number }> = [];
+    const editor = new MarkdownEditor({
+      parent,
+      toolbar: false,
+      plugins: [
+        imageUploadPlugin({
+          handler: async (_file, { reportProgress }) => {
+            reportProgress(42);
+            return "https://cdn.example.com/progress.png";
+          },
+          onStatusChange: ({ status, progress }) => updates.push({ status, progress }),
+        }),
+      ],
+    });
+
+    dispatchDrop(editor, [new File(["content"], "progress.png", { type: "image/png" })]);
+    await flushPromises();
+
+    expect(updates).toEqual([
+      { status: "uploading", progress: 0 },
+      { status: "uploading", progress: 42 },
+      { status: "success", progress: 100 },
+    ]);
+    editor.destroy();
+  });
+
+  it("cancels an upload and ignores a late result", async () => {
+    const parent = document.createElement("div");
+    let resolveUpload: ((url: string) => void) | undefined;
+    let cancel: (() => void) | undefined;
+    let signal: AbortSignal | undefined;
+    const editor = new MarkdownEditor({
+      parent,
+      toolbar: false,
+      plugins: [
+        imageUploadPlugin({
+          handler: (_file, context) => new Promise<string>((resolve) => {
+            signal = context.signal;
+            resolveUpload = resolve;
+          }),
+          onStatusChange: (update) => { cancel = update.cancel ?? cancel; },
+        }),
+      ],
+    });
+
+    dispatchDrop(editor, [new File(["content"], "cancel.png", { type: "image/png" })]);
+    cancel?.();
+    expect(signal?.aborted).toBe(true);
+    resolveUpload?.("https://cdn.example.com/late.png");
+    await flushPromises();
+
+    expect(editor.getValue()).toBe("![Upload cancelled: cancel.png](pd-editor-upload-1)");
+    editor.destroy();
+  });
+
+  it("retries a failed upload", async () => {
+    const parent = document.createElement("div");
+    let attempt = 0;
+    let retry: (() => void) | undefined;
+    const editor = new MarkdownEditor({
+      parent,
+      toolbar: false,
+      plugins: [
+        imageUploadPlugin({
+          handler: async () => {
+            attempt += 1;
+            if (attempt === 1) throw new Error("first attempt failed");
+            return "https://cdn.example.com/retried.png";
+          },
+          onStatusChange: (update) => { retry = update.retry ?? retry; },
+        }),
+      ],
+    });
+
+    dispatchDrop(editor, [new File(["content"], "retry.png", { type: "image/png" })]);
+    await flushPromises();
+    retry?.();
+    await flushPromises();
+
+    expect(attempt).toBe(2);
+    expect(editor.getValue()).toBe("![retry.png](https://cdn.example.com/retried.png)");
     editor.destroy();
   });
 });

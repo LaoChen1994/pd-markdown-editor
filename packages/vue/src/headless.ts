@@ -1,5 +1,6 @@
 export { MarkdownEditor } from "./MarkdownEditor";
 export { markdownUiComponents } from "./MarkdownEditor";
+export type { MarkdownEditorHandle } from "./MarkdownEditor";
 export { useMarkdownEditor } from "./useMarkdownEditor";
 export type { UseMarkdownEditorOptions, UseMarkdownEditorReturn } from "./useMarkdownEditor";
 export { Toolbar } from "./Toolbar";
@@ -9,6 +10,7 @@ export type {
   CodeBlockInfo,
   CodeHighlightPluginOptions,
   EditorCommand,
+  EditorLabels,
   EditorPlugin,
   FrontmatterPluginOptions,
   FrontmatterResult,
@@ -20,9 +22,15 @@ export type {
   MermaidDiagram,
   MermaidPluginOptions,
   ToolbarItem,
+  ImageUploadContext,
+  ImageUploadPluginOptions,
+  ImageUploadStatus,
+  ImageUploadUpdate,
 } from "pd-editor-core";
 export {
   codeHighlightPlugin,
+  copyHtml,
+  copyMarkdown,
   createMermaidElement,
   extractCodeBlocks,
   extractMathExpressions,
@@ -35,4 +43,5 @@ export {
   mermaidPlugin,
   parseFrontmatter,
   tocPlugin,
+  downloadMarkdown,
 } from "pd-editor-core";
