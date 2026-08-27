@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 2.0.2
+
+### Patch Changes
+
+- 618f7a9: Open the image upload file picker from plugin toolbar actions, mount the default table of contents inside the editor, and expose undo, redo, and search/replace in the default toolbar.
+
 ## 2.0.1
 
 ### Patch Changes
