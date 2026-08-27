@@ -1,5 +1,14 @@
 # pd-editor-react
 
+## 2.1.1
+
+### Patch Changes
+
+- 618f7a9: Open the image upload file picker from plugin toolbar actions, mount the default table of contents inside the editor, and expose undo, redo, and search/replace in the default toolbar.
+- 618f7a9: Use Mermaid strict security mode for the default preview renderers.
+- Updated dependencies [618f7a9]
+  - pd-editor-core@2.0.2
+
 ## 2.1.0
 
 ### Minor Changes
