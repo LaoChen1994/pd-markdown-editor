@@ -61,7 +61,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     onReject,
     onError,
     onStatusChange,
-    label = "Upload Image",
+    label,
   } = options;
   let uploadId = 0;
   let fileInput: HTMLInputElement | null = null;
@@ -89,7 +89,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     const attempt = upload.attempt;
     upload.controller = new AbortController();
     upload.status = "uploading";
-    const uploadingMarker = `![Uploading ${upload.file.name}...](pd-editor-upload-${upload.id})`;
+    const uploadingMarker = `![${editor.getMessage?.("uploadingImage", { file: upload.file.name }) ?? `Uploading ${upload.file.name}...`}](pd-editor-upload-${upload.id})`;
     if (upload.marker !== uploadingMarker) {
       replaceMarker(editor, upload.marker, uploadingMarker);
       upload.marker = uploadingMarker;
@@ -99,7 +99,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
       if (upload.status !== "uploading" || upload.attempt !== attempt) return;
       upload.controller.abort();
       upload.status = "cancelled";
-      const cancelledMarker = `![Upload cancelled: ${upload.file.name}](pd-editor-upload-${upload.id})`;
+      const cancelledMarker = `![${editor.getMessage?.("uploadCancelled", { file: upload.file.name }) ?? `Upload cancelled: ${upload.file.name}`}](pd-editor-upload-${upload.id})`;
       replaceMarker(editor, upload.marker, cancelledMarker);
       upload.marker = cancelledMarker;
       onStatusChange?.({
@@ -136,7 +136,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
       if (destroyed || upload.status !== "uploading" || upload.attempt !== attempt) return;
       upload.status = "error";
       onError?.(error, upload.file);
-      const failedMarker = `![Upload failed: ${upload.file.name}](pd-editor-upload-${upload.id})`;
+      const failedMarker = `![${editor.getMessage?.("uploadFailed", { file: upload.file.name }) ?? `Upload failed: ${upload.file.name}`}](pd-editor-upload-${upload.id})`;
       replaceMarker(editor, upload.marker, failedMarker);
       upload.marker = failedMarker;
       onStatusChange?.({
@@ -161,7 +161,7 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
     }
 
     uploadId += 1;
-    const marker = `![Uploading ${file.name}...](pd-editor-upload-${uploadId})`;
+    const marker = `![${editor.getMessage?.("uploadingImage", { file: file.name }) ?? `Uploading ${file.name}...`}](pd-editor-upload-${uploadId})`;
     const upload: ImageUploadTask = {
       id: uploadId,
       file,
@@ -232,10 +232,10 @@ export function imageUploadPlugin(options: ImageUploadPluginOptions): EditorPlug
       return extensions;
     },
 
-    toolbar(): ToolbarItem {
+    toolbar({ editor }): ToolbarItem {
       return {
         command: "image-upload",
-        label,
+        label: label ?? editor.getMessage?.("image-upload") ?? "Upload Image",
         icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M14 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm-1 10H3l3-4 1.5 2L10 7l3 5zM5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>',
         onClick: () => fileInput?.click(),
       };

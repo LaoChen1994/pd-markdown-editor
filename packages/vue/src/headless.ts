@@ -11,6 +11,8 @@ export type {
   CodeHighlightPluginOptions,
   EditorCommand,
   EditorLabels,
+  EditorMessageKey,
+  EditorMessages,
   EditorPlugin,
   FrontmatterPluginOptions,
   FrontmatterResult,
@@ -44,4 +46,6 @@ export {
   parseFrontmatter,
   tocPlugin,
   downloadMarkdown,
+  enUS,
+  zhCN,
 } from "pd-editor-core";

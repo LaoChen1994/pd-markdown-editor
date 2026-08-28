@@ -13,6 +13,8 @@ export interface TocPluginOptions {
   container?: HTMLElement;
   /** Max heading level, default 3 */
   maxLevel?: number;
+  /** TOC heading. Defaults to the editor's tableOfContents message. */
+  title?: string;
 }
 
 /**
@@ -67,12 +69,12 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
   const { maxLevel = 3 } = options;
   let tocContainer: HTMLElement | null = options.container ?? null;
 
-  function renderToc(items: TocItem[]): void {
+  const renderToc = (items: TocItem[], titleText: string): void => {
     if (!tocContainer) return;
     tocContainer.replaceChildren();
 
     const title = document.createElement("div");
-    title.textContent = "目录";
+    title.textContent = titleText;
     Object.assign(title.style, {
       fontWeight: "600",
       fontSize: "12px",
@@ -109,7 +111,7 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
     }
 
     tocContainer.appendChild(list);
-  }
+  };
 
   return {
     name: "toc",
@@ -123,12 +125,12 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
       }
       // Initial render
       const toc = extractTocFromMarkdown(editor.getValue(), maxLevel);
-      renderToc(toc);
+      renderToc(toc, options.title ?? editor.getMessage?.("tableOfContents") ?? "Table of Contents");
     },
 
-    onUpdate({ value }) {
+    onUpdate({ value, editor }) {
       const toc = extractTocFromMarkdown(value, maxLevel);
-      renderToc(toc);
+      renderToc(toc, options.title ?? editor.getMessage?.("tableOfContents") ?? "Table of Contents");
     },
 
     destroy() {

@@ -146,6 +146,8 @@ editor.setReadOnly(true);
 editor.setMaxLength(5000);
 editor.getCharacterCount();
 editor.setToolbar(true, { bold: "加粗", "image-upload": "上传图片" });
+editor.setMessages(zhCN);
+editor.getMessage("tableOfContents");
 editor.replaceSelection("new text");
 editor.wrapSelection("**", "**");
 editor.getSelection();
@@ -153,6 +155,17 @@ editor.insertAtCursor("<!-- note -->");
 editor.getEditorView(); // underlying CodeMirror EditorView
 editor.destroy();
 ```
+
+## Internationalization
+
+```ts
+import { MarkdownEditor, zhCN } from "pd-editor-core";
+
+const editor = new MarkdownEditor({ parent, messages: zhCN });
+editor.setMessages({ ...zhCN, tableOfContents: "文章目录" });
+```
+
+The built-in `enUS` and `zhCN` catalogs cover toolbar labels, TOC, image upload placeholders, lint diagnostics, and preview status messages. Existing `labels` overrides remain supported and take precedence for toolbar commands.
 
 Copy or download content without adding another dependency:
 

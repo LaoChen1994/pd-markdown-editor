@@ -94,6 +94,10 @@
 }
 
 @media (max-width: 620px) {
+  .pd-editor-vue .pd-editor-toc {
+    display: none !important;
+  }
+
   .pd-editor-vue[data-preview="split"] {
     flex-direction: column !important;
   }

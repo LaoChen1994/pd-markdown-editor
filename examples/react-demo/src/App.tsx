@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   MarkdownEditor,
   codeHighlightPlugin,
@@ -8,12 +8,16 @@ import {
   mathPlugin,
   mermaidPlugin,
   tocPlugin,
+  enUS,
+  zhCN,
 } from "pd-editor-react";
 import katex from "katex";
 import type {
   CodeBlockInfo,
   FrontmatterResult,
+  ImageUploadUpdate,
   MarkdownDiagnostic,
+  MarkdownEditorHandle,
   MathExpression,
   MermaidDiagram,
 } from "pd-editor-react";
@@ -88,6 +92,7 @@ const renderMath = (value: string, displayMode: boolean): string => {
 };
 
 const App = () => {
+  const editorRef = useRef<MarkdownEditorHandle>(null);
   const [content, setContent] = useState(INITIAL_MD);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [preview, setPreview] = useState<"edit" | "preview" | "split">("split");
@@ -96,6 +101,9 @@ const App = () => {
   const [mathExpressions, setMathExpressions] = useState<MathExpression[]>([]);
   const [frontmatter, setFrontmatter] = useState<FrontmatterResult | null>(null);
   const [diagnostics, setDiagnostics] = useState<MarkdownDiagnostic[]>([]);
+  const [locale, setLocale] = useState<"en-US" | "zh-CN">("en-US");
+  const [upload, setUpload] = useState<ImageUploadUpdate | null>(null);
+  const [actionStatus, setActionStatus] = useState("");
 
   const plugins = useMemo(() => [
     tocPlugin(),
@@ -105,7 +113,11 @@ const App = () => {
     frontmatterPlugin({ onFrontmatter: setFrontmatter }),
     markdownLintPlugin({ onDiagnostics: setDiagnostics }),
     imageUploadPlugin({
-      handler: async (file) => URL.createObjectURL(file),
+      handler: async (file, { reportProgress }) => {
+        reportProgress(100);
+        return URL.createObjectURL(file);
+      },
+      onStatusChange: setUpload,
     }),
   ], []);
 
@@ -134,6 +146,9 @@ const App = () => {
           <button type="button" onClick={() => setTheme((value) => value === "light" ? "dark" : "light")}>
             {theme === "light" ? "Dark" : "Light"}
           </button>
+          <button type="button" onClick={() => setLocale((value) => value === "en-US" ? "zh-CN" : "en-US")}>
+            {locale === "en-US" ? "中文" : "English"}
+          </button>
           {(["edit", "split", "preview"] as const).map((mode) => (
             <button
               type="button"
@@ -148,7 +163,29 @@ const App = () => {
       </section>
 
       <section className="demo-workbench" aria-label="Markdown editor playground">
+        <div className="demo-editor-actions" aria-label="Document actions">
+          <button type="button" onClick={async () => {
+            try {
+              await editorRef.current?.copyMarkdown();
+              setActionStatus("Markdown copied");
+            } catch {
+              setActionStatus("Clipboard permission denied");
+            }
+          }}>Copy Markdown</button>
+          <button type="button" disabled={preview === "edit"} onClick={async () => {
+            try {
+              await editorRef.current?.copyHtml();
+              setActionStatus("HTML copied");
+            } catch {
+              setActionStatus("Clipboard permission denied");
+            }
+          }}>Copy HTML</button>
+          <button type="button" onClick={() => editorRef.current?.downloadMarkdown("pd-editor-demo.md")}>Download .md</button>
+          <span className="demo-character-count">{content.length.toLocaleString()} / 12,000</span>
+          <span className="demo-action-status" role="status">{actionStatus}</span>
+        </div>
         <MarkdownEditor
+          ref={editorRef}
           value={content}
           onChange={setContent}
           onSave={(value) => window.alert("Saved draft length: " + value.length)}
@@ -156,6 +193,8 @@ const App = () => {
           preview={preview}
           height="clamp(520px, 62vh, 720px)"
           placeholder="Start writing Markdown..."
+          maxLength={12000}
+          messages={locale === "zh-CN" ? zhCN : enUS}
           plugins={plugins}
           renderComponentMap={{
             blockquote: ({ children }) => (
@@ -165,6 +204,15 @@ const App = () => {
             ),
           }}
         />
+        {upload && (
+          <div className="demo-upload-status" role="status">
+            <span>{upload.file.name}</span>
+            <strong>{upload.status}</strong>
+            <progress max="100" value={upload.progress} />
+            {upload.cancel && <button type="button" onClick={upload.cancel}>Cancel</button>}
+            {upload.retry && <button type="button" onClick={upload.retry}>Retry</button>}
+          </div>
+        )}
       </section>
 
       <section className="demo-inspector" aria-label="Plugin output">

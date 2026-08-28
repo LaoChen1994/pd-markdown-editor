@@ -43,6 +43,24 @@ export interface EditorLabels {
   [command: string]: string | undefined;
 }
 
+/** Built-in editor message identifiers */
+export type EditorMessageKey =
+  | EditorCommand
+  | "image-upload"
+  | "tableOfContents"
+  | "uploadingImage"
+  | "uploadCancelled"
+  | "uploadFailed"
+  | "mermaidRendering"
+  | "mermaidRenderingError"
+  | "lintImageAlt"
+  | "lintEmptyLink"
+  | "lintHeadingIncrement"
+  | "lintDuplicateHeadingId";
+
+/** Editor messages. Built-in locale objects can be extended with plugin messages. */
+export type EditorMessages = Partial<Record<EditorMessageKey, string>> & EditorLabels;
+
 /** Editor plugin interface */
 export interface EditorPlugin {
   /** Unique plugin name */
@@ -76,6 +94,8 @@ export interface MarkdownEditorInstance {
   setMaxLength?(maxLength?: number): void;
   getCharacterCount?(): number;
   setToolbar?(toolbar: boolean | ToolbarItem[], labels?: EditorLabels): void;
+  setMessages?(messages?: EditorMessages): void;
+  getMessage?(key: string, params?: Record<string, string | number>): string;
   use(plugin: EditorPlugin): MarkdownEditorInstance;
   unuse(name: string): MarkdownEditorInstance;
   replaceSelection(text: string): void;
@@ -113,6 +133,8 @@ export interface MarkdownEditorOptions {
   toolbar?: boolean | ToolbarItem[];
   /** Toolbar labels keyed by command */
   labels?: EditorLabels;
+  /** Built-in UI and plugin messages. Defaults to en-US. */
+  messages?: EditorMessages;
 }
 
 export type { Extension };

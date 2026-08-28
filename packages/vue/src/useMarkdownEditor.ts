@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { copyMarkdown, downloadMarkdown, MarkdownEditor } from "pd-editor-core";
-import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorMessages, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Ref } from "vue";
 
 export interface UseMarkdownEditorOptions {
@@ -16,6 +16,7 @@ export interface UseMarkdownEditorOptions {
   plugins?: EditorPlugin[];
   toolbar?: boolean | MarkdownEditorOptions["toolbar"];
   labels?: EditorLabels;
+  messages?: EditorMessages;
 }
 
 export interface UseMarkdownEditorReturn {
@@ -54,6 +55,7 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       plugins: options.plugins,
       toolbar: options.toolbar,
       labels: options.labels,
+      messages: options.messages,
     });
 
     editorRef.value = editor;
