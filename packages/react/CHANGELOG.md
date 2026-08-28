@@ -1,5 +1,17 @@
 # pd-editor-react
 
+## 2.2.0
+
+### Minor Changes
+
+- 9c26383: Add image upload progress, cancellation, retry, and status APIs; document length limits and character counts; toolbar label overrides; Markdown and preview HTML copy helpers; Markdown downloads; and framework component export actions.
+
+### Patch Changes
+
+- 9c26383: Preserve the editor instance, undo history, and current uncontrolled content when switching preview modes.
+- Updated dependencies [9c26383]
+  - pd-editor-core@2.1.0
+
 ## 2.1.1
 
 ### Patch Changes
