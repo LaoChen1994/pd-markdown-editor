@@ -1,6 +1,6 @@
 {
   "name": "pd-editor-vue",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Vue 3 Markdown editor for technical content and AI writing workflows",
   "type": "module",
   "engines": {
