@@ -1,9 +1,10 @@
-import React, { act } from "react";
+import React, { act, createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MarkdownRenderer } from "pd-markdown/web";
 import { MarkdownEditorComponent, markdownUiComponentMap } from "./MarkdownEditor";
+import type { MarkdownEditorHandle } from "./MarkdownEditor";
 import type { MarkdownEditorInstance } from "pd-editor-core";
 
 const mermaidInitialize = vi.hoisted(() => vi.fn());
@@ -128,6 +129,51 @@ describe("React markdown UI adapter", () => {
     container.remove();
   });
 
+  it("preserves the editor instance and history across preview mode changes", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const capturedEditors: MarkdownEditorInstance[] = [];
+    const plugin = {
+      name: "capture-preview-editor",
+      install: (instance: MarkdownEditorInstance) => {
+        capturedEditors.push(instance);
+      },
+    };
+
+    document.body.appendChild(container);
+
+    await act(async () => {
+      root.render(<MarkdownEditorComponent defaultValue="first" preview="preview" plugins={[plugin]} />);
+    });
+
+    expect(capturedEditors).toHaveLength(0);
+
+    await act(async () => {
+      root.render(<MarkdownEditorComponent defaultValue="first" preview="edit" plugins={[plugin]} />);
+    });
+
+    capturedEditors[0].setValue("changed");
+
+    await act(async () => {
+      root.render(<MarkdownEditorComponent defaultValue="first" preview="preview" plugins={[plugin]} />);
+    });
+    await act(async () => {
+      root.render(<MarkdownEditorComponent defaultValue="first" preview="split" plugins={[plugin]} />);
+    });
+
+    expect(capturedEditors).toHaveLength(1);
+    expect(container.querySelector(".cm-editor")).not.toBeNull();
+    expect(container.textContent).toContain("changed");
+
+    capturedEditors[0].executeCommand("undo");
+    expect(capturedEditors[0].getValue()).toBe("first");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
   it("updates preview-only content when a controlled value changes", async () => {
     const container = document.createElement("div");
     const root = createRoot(container);
@@ -243,6 +289,44 @@ describe("React markdown UI adapter", () => {
     await act(async () => {
       root.unmount();
     });
+    container.remove();
+  });
+
+  it("updates maxLength and labels and exposes export actions", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const editor = createRef<MarkdownEditorHandle>();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+
+    document.body.appendChild(container);
+    await act(async () => {
+      root.render(
+        <MarkdownEditorComponent
+          ref={editor}
+          defaultValue="# Hello"
+          maxLength={20}
+          labels={{ bold: "加粗" }}
+          preview="split"
+        />
+      );
+    });
+
+    expect(container.querySelector('[aria-label="加粗"]')).not.toBeNull();
+    expect(editor.current?.getCharacterCount()).toBe(7);
+    await editor.current?.copyMarkdown();
+    await editor.current?.copyHtml();
+    expect(writeText).toHaveBeenNthCalledWith(1, "# Hello");
+    expect(writeText.mock.calls[1][0]).toContain("Hello");
+
+    await act(async () => {
+      root.render(<MarkdownEditorComponent ref={editor} defaultValue="# Hello" maxLength={3} preview="split" />);
+    });
+    expect(editor.current?.getValue()).toBe("# H");
+    expect(container.querySelector(".pd-md-preview")?.textContent).toContain("H");
+    expect(container.querySelector(".pd-md-preview")?.textContent).not.toContain("Hello");
+
+    await act(async () => root.unmount());
     container.remove();
   });
 });

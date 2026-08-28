@@ -1,6 +1,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
-import { MarkdownEditor } from "pd-editor-core";
-import type { MarkdownEditorOptions, EditorCommand, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import { copyMarkdown, downloadMarkdown, MarkdownEditor } from "pd-editor-core";
+import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Ref } from "vue";
 
 export interface UseMarkdownEditorOptions {
@@ -10,10 +10,12 @@ export interface UseMarkdownEditorOptions {
   onSave?: (value: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  maxLength?: number;
   extensions?: Extension[];
   codeLanguages?: MarkdownCodeLanguages;
   plugins?: EditorPlugin[];
   toolbar?: boolean | MarkdownEditorOptions["toolbar"];
+  labels?: EditorLabels;
 }
 
 export interface UseMarkdownEditorReturn {
@@ -23,6 +25,9 @@ export interface UseMarkdownEditorReturn {
   setValue: (value: string) => void;
   executeCommand: (command: EditorCommand | string) => void;
   focus: () => void;
+  getCharacterCount: () => number;
+  copyMarkdown: () => Promise<void>;
+  downloadMarkdown: (filename?: string) => void;
 }
 
 /**
@@ -43,10 +48,12 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       onSave: options.onSave,
       placeholder: options.placeholder,
       readOnly: options.readOnly,
+      maxLength: options.maxLength,
       extensions: options.extensions,
       codeLanguages: options.codeLanguages,
       plugins: options.plugins,
       toolbar: options.toolbar,
+      labels: options.labels,
     });
 
     editorRef.value = editor;
@@ -61,6 +68,19 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
   const setValue = (v: string) => editorRef.value?.setValue(v);
   const executeCommand = (cmd: EditorCommand | string) => editorRef.value?.executeCommand(cmd);
   const focus = () => editorRef.value?.focus();
+  const getCharacterCount = () => editorRef.value?.getCharacterCount() ?? 0;
+  const copyCurrentMarkdown = () => copyMarkdown(editorRef.value?.getValue() ?? "");
+  const downloadCurrentMarkdown = (filename?: string) => downloadMarkdown(editorRef.value?.getValue() ?? "", filename);
 
-  return { containerRef, editorRef, getValue, setValue, executeCommand, focus };
+  return {
+    containerRef,
+    editorRef,
+    getValue,
+    setValue,
+    executeCommand,
+    focus,
+    getCharacterCount,
+    copyMarkdown: copyCurrentMarkdown,
+    downloadMarkdown: downloadCurrentMarkdown,
+  };
 }

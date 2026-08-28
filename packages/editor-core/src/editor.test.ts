@@ -392,4 +392,51 @@ describe("MarkdownEditor", () => {
 
     editor.destroy();
   });
+
+  it("enforces and dynamically updates maxLength", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "123456",
+      maxLength: 5,
+      toolbar: false,
+    });
+
+    expect(editor.getValue()).toBe("12345");
+    expect(editor.getCharacterCount()).toBe(5);
+
+    editor.getEditorView().dispatch({ changes: { from: 5, insert: "6" } });
+    expect(editor.getValue()).toBe("12345");
+
+    editor.setValue("abcdef");
+    expect(editor.getValue()).toBe("abcde");
+
+    editor.setMaxLength(3);
+    expect(editor.getValue()).toBe("abc");
+
+    editor.setMaxLength(undefined);
+    editor.setValue("abcdef");
+    expect(editor.getValue()).toBe("abcdef");
+
+    editor.destroy();
+  });
+
+  it("updates toolbar visibility and labels without recreating the editor", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({ parent, initialValue: "hello" });
+    const view = editor.getEditorView();
+
+    editor.setToolbar(true, { bold: "加粗" });
+    expect(parent.querySelector('[aria-label="加粗"]')).not.toBeNull();
+    expect(editor.getEditorView()).toBe(view);
+
+    editor.setToolbar(false);
+    expect(parent.querySelector(".pd-editor-toolbar")).toBeNull();
+
+    editor.setToolbar(true, { italic: "斜体" });
+    expect(parent.querySelector('[aria-label="斜体"]')).not.toBeNull();
+    expect(editor.getEditorView()).toBe(view);
+
+    editor.destroy();
+  });
 });

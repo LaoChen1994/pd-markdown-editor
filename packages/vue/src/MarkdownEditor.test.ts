@@ -3,6 +3,7 @@ import { createApp, createSSRApp, h, nextTick, ref } from "vue";
 import { renderToString } from "@vue/server-renderer";
 import { createParser } from "pd-markdown/parser";
 import { MarkdownEditor, markdownUiComponents, renderAstNode } from "./MarkdownEditor";
+import type { MarkdownEditorInstance } from "pd-editor-core";
 
 describe("Vue markdown UI renderer", () => {
   it("preserves table header, alignment, heading id, and task item semantics", async () => {
@@ -118,6 +119,44 @@ describe("Vue markdown UI renderer", () => {
     container.remove();
   });
 
+  it("preserves the editor instance and history across preview mode changes", async () => {
+    const container = document.createElement("div");
+    const preview = ref<"edit" | "preview" | "split">("edit");
+    const capturedEditors: MarkdownEditorInstance[] = [];
+    const plugin = {
+      name: "capture-preview-editor",
+      install: (instance: MarkdownEditorInstance) => {
+        capturedEditors.push(instance);
+      },
+    };
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        defaultValue: "first",
+        preview: preview.value,
+        plugins: [plugin],
+      }),
+    });
+
+    document.body.appendChild(container);
+    app.mount(container);
+    await nextTick();
+
+    capturedEditors[0].setValue("changed");
+    preview.value = "preview";
+    await nextTick();
+    preview.value = "split";
+    await nextTick();
+
+    expect(capturedEditors).toHaveLength(1);
+    expect(container.querySelector(".cm-editor")).not.toBeNull();
+
+    capturedEditors[0].executeCommand("undo");
+    expect(capturedEditors[0].getValue()).toBe("first");
+
+    app.unmount();
+    container.remove();
+  });
+
   it("syncs split preview scroll with the editor", async () => {
     const container = document.createElement("div");
     const app = createApp({
@@ -172,6 +211,48 @@ describe("Vue markdown UI renderer", () => {
     await nextTick();
 
     expect(container.querySelector(".mermaid-loading")).not.toBeNull();
+
+    app.unmount();
+    container.remove();
+  });
+
+  it("updates maxLength and labels and exposes export actions", async () => {
+    const container = document.createElement("div");
+    const maxLength = ref(20);
+    const actions = ref<{
+      getValue: () => string;
+      getCharacterCount: () => number;
+      copyMarkdown: () => Promise<void>;
+      copyHtml: () => Promise<void>;
+    } | null>(null);
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        ref: actions,
+        defaultValue: "# Hello",
+        maxLength: maxLength.value,
+        labels: { bold: "加粗" },
+        preview: "split",
+      }),
+    });
+
+    document.body.appendChild(container);
+    app.mount(container);
+    await nextTick();
+
+    expect(container.querySelector('[aria-label="加粗"]')).not.toBeNull();
+    expect(actions.value?.getCharacterCount()).toBe(7);
+    await actions.value?.copyMarkdown();
+    await actions.value?.copyHtml();
+    expect(writeText).toHaveBeenNthCalledWith(1, "# Hello");
+    expect(writeText.mock.calls[1][0]).toContain("Hello");
+
+    maxLength.value = 3;
+    await nextTick();
+    expect(actions.value?.getValue()).toBe("# H");
+    expect(container.querySelector(".pd-md-preview")?.textContent).toContain("H");
+    expect(container.querySelector(".pd-md-preview")?.textContent).not.toContain("Hello");
 
     app.unmount();
     container.remove();

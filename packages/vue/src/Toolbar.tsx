@@ -1,6 +1,6 @@
 import { defineComponent } from "vue";
 import { getDefaultToolbarItems } from "pd-editor-core";
-import type { ToolbarItem } from "pd-editor-core";
+import type { EditorLabels, ToolbarItem } from "pd-editor-core";
 import type { PropType, VNode, VNodeChild } from "vue";
 
 type JsxRenderable = (props: Record<string, unknown> & { children?: VNodeChild }) => VNode;
@@ -10,11 +10,12 @@ export const Toolbar = defineComponent({
   props: {
     items: { type: Array as PropType<ToolbarItem[]>, default: undefined },
     theme: { type: String as PropType<"light" | "dark">, default: "light" },
+    labels: { type: Object as PropType<EditorLabels>, default: undefined },
   },
   emits: ["command"],
   setup(props, { emit }) {
     return () => {
-      const toolbarItems = props.items ?? getDefaultToolbarItems();
+      const toolbarItems = props.items ?? getDefaultToolbarItems(props.labels);
       const isDark = props.theme === "dark";
       const Div = "div" as unknown as JsxRenderable;
       const Button = "button" as unknown as JsxRenderable;

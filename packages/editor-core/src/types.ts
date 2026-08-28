@@ -38,6 +38,11 @@ export interface EditorCommandState {
   enabled: boolean;
 }
 
+/** Display labels keyed by toolbar command */
+export interface EditorLabels {
+  [command: string]: string | undefined;
+}
+
 /** Editor plugin interface */
 export interface EditorPlugin {
   /** Unique plugin name */
@@ -68,6 +73,9 @@ export interface MarkdownEditorInstance {
   getCommandState(command: EditorCommand | string): EditorCommandState;
   isActive(command: EditorCommand | string): boolean;
   setReadOnly(readOnly: boolean): void;
+  setMaxLength?(maxLength?: number): void;
+  getCharacterCount?(): number;
+  setToolbar?(toolbar: boolean | ToolbarItem[], labels?: EditorLabels): void;
   use(plugin: EditorPlugin): MarkdownEditorInstance;
   unuse(name: string): MarkdownEditorInstance;
   replaceSelection(text: string): void;
@@ -93,6 +101,8 @@ export interface MarkdownEditorOptions {
   placeholder?: string;
   /** Read-only mode */
   readOnly?: boolean;
+  /** Maximum document length. Longer input is blocked and programmatic values are truncated. */
+  maxLength?: number;
   /** Custom CodeMirror 6 extensions */
   extensions?: Extension[];
   /** Optional fenced code language resolver for the Markdown editor */
@@ -101,6 +111,8 @@ export interface MarkdownEditorOptions {
   plugins?: EditorPlugin[];
   /** Toolbar config: true for default, false to hide, or custom items */
   toolbar?: boolean | ToolbarItem[];
+  /** Toolbar labels keyed by command */
+  labels?: EditorLabels;
 }
 
 export type { Extension };

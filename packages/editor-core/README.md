@@ -143,12 +143,25 @@ editor.setValue("# External sync", { emitChange: false }); // update without onC
 editor.focus();
 editor.setTheme("dark");
 editor.setReadOnly(true);
+editor.setMaxLength(5000);
+editor.getCharacterCount();
+editor.setToolbar(true, { bold: "加粗", "image-upload": "上传图片" });
 editor.replaceSelection("new text");
 editor.wrapSelection("**", "**");
 editor.getSelection();
 editor.insertAtCursor("<!-- note -->");
 editor.getEditorView(); // underlying CodeMirror EditorView
 editor.destroy();
+```
+
+Copy or download content without adding another dependency:
+
+```ts
+import { copyHtml, copyMarkdown, downloadMarkdown } from "pd-editor-core";
+
+await copyMarkdown(editor.getValue());
+await copyHtml(renderedPreview.innerHTML);
+downloadMarkdown(editor.getValue(), "notes.md");
 ```
 
 ## Plugins
@@ -166,17 +179,26 @@ const editor = new MarkdownEditor({
     imageUploadPlugin({
       maxSize: 5 * 1024 * 1024,
       accept: ["image/png", "image/jpeg", "image/webp"],
-      handler: async (file) => {
+      handler: async (file, { signal, reportProgress }) => {
         const form = new FormData();
         form.append("file", file);
+
+        reportProgress(10);
 
         const response = await fetch("/api/upload", {
           method: "POST",
           body: form,
+          signal,
         });
 
         const data = await response.json() as { url: string };
+        reportProgress(100);
         return data.url;
+      },
+      onStatusChange: (upload) => {
+        console.log(upload.status, upload.progress);
+        // upload.cancel?.();
+        // upload.retry?.();
       },
     }),
   ],
@@ -187,11 +209,17 @@ Options:
 
 | Option | Type | Default |
 | --- | --- | --- |
-| `handler` | `(file: File) => Promise<string>` | required |
+| `handler` | `(file: File, context: ImageUploadContext) => Promise<string>` | required |
 | `accept` | `string[]` | `["image/*"]` |
 | `maxSize` | `number` | unlimited |
 | `pasteUpload` | `boolean` | `true` |
 | `dragUpload` | `boolean` | `true` |
+| `onStatusChange` | `(update: ImageUploadUpdate) => void` | - |
+| `onReject` | `(file, reason) => void` | - |
+| `onError` | `(error, file) => void` | - |
+| `label` | `string` | `"Upload Image"` |
+
+One-argument handlers remain compatible. Use `context.signal` to abort the request and `context.reportProgress(0..100)` when the transport exposes progress. Status updates include `cancel` while uploading and `retry` after failure or cancellation.
 
 ### Table Of Contents
 
@@ -305,10 +333,12 @@ const editor = new MarkdownEditor({
 | `onSave` | `(value: string) => void` | - |
 | `placeholder` | `string` | - |
 | `readOnly` | `boolean` | `false` |
+| `maxLength` | `number` | unlimited |
 | `extensions` | `Extension[]` | `[]` |
 | `codeLanguages` | `MarkdownCodeLanguages` | - |
 | `plugins` | `EditorPlugin[]` | `[]` |
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` |
+| `labels` | `EditorLabels` | `{}` |
 
 ## FAQ
 

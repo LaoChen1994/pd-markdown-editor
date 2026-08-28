@@ -4,6 +4,7 @@ import type { Extension } from "@codemirror/state";
 import type {
   EditorCommand,
   EditorCommandState,
+  EditorLabels,
   EditorPlugin,
   MarkdownEditorInstance,
   MarkdownEditorOptions,
@@ -57,6 +58,8 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private baseToolbarItems: ToolbarItem[] | null;
   private currentTheme: "light" | "dark";
   private currentReadOnly: boolean;
+  private currentMaxLength?: number;
+  private currentLabels: EditorLabels;
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
   private initialValue: string;
@@ -71,17 +74,21 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       onSave,
       placeholder,
       readOnly = false,
+      maxLength,
       extensions: userExtensions = [],
       codeLanguages,
       plugins = [],
       toolbar = true,
+      labels = {},
     } = options;
 
     this.currentTheme = theme;
     this.currentReadOnly = readOnly;
+    this.currentMaxLength = maxLength === undefined ? undefined : Math.max(0, maxLength);
+    this.currentLabels = labels;
     this.onChange = onChange;
-    this.initialValue = initialValue;
-    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems() : toolbar;
+    this.initialValue = this.currentMaxLength === undefined ? initialValue : initialValue.slice(0, this.currentMaxLength);
+    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems(labels) : toolbar;
 
     // Plugin manager
     this.pluginManager = new PluginManager();
@@ -149,7 +156,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
     // Create CM6 view
     this.view = new EditorView({
       state: EditorState.create({
-        doc: initialValue,
+        doc: this.initialValue,
         extensions: [
           ...defaultExts,
           this.createMarkdownKeymap(),
@@ -158,6 +165,12 @@ export class MarkdownEditor implements MarkdownEditorInstance {
           this.pluginCompartment.of(pluginExts),
           saveKeymap,
           updateListener,
+          EditorState.transactionFilter.of((transaction) => {
+            if (!transaction.docChanged || this.currentMaxLength === undefined || transaction.newDoc.length <= this.currentMaxLength) {
+              return transaction;
+            }
+            return [];
+          }),
           ...userExtensions,
         ],
       }),
@@ -172,6 +185,7 @@ export class MarkdownEditor implements MarkdownEditorInstance {
 
   setValue(value: string, options?: { emitChange?: boolean }): void {
     if (!this.view) return;
+    if (this.currentMaxLength !== undefined) value = value.slice(0, this.currentMaxLength);
     if (this.view.state.doc.toString() === value) return;
     this.suppressNextChange = options?.emitChange === false;
     this.view.dispatch({
@@ -221,6 +235,28 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       effects: this.readOnlyCompartment.reconfigure(this.createReadOnlyExtension(readOnly)),
     });
     this.updateToolbarState();
+  }
+
+  setMaxLength(maxLength?: number): void {
+    this.currentMaxLength = maxLength === undefined ? undefined : Math.max(0, maxLength);
+    if (this.currentMaxLength !== undefined && this.getCharacterCount() > this.currentMaxLength) {
+      this.setValue(this.getValue().slice(0, this.currentMaxLength));
+    }
+  }
+
+  getCharacterCount(): number {
+    return this.getValue().length;
+  }
+
+  setToolbar(toolbar: boolean | ToolbarItem[], labels: EditorLabels = this.currentLabels): void {
+    this.currentLabels = labels;
+    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems(labels) : toolbar;
+    if (!this.baseToolbarItems) {
+      this.toolbarEl?.remove();
+      this.toolbarEl = null;
+      return;
+    }
+    this.refreshToolbar();
   }
 
   replaceSelection(text: string): void {
@@ -312,7 +348,10 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       editor: this,
     });
     const nextToolbar = createToolbarElement(
-      [...this.baseToolbarItems, ...pluginItems],
+      [...this.baseToolbarItems, ...pluginItems].map((item) => ({
+        ...item,
+        label: this.currentLabels[item.command] ?? item.label,
+      })),
       (cmd) => this.executeCommand(cmd),
       (cmd) => this.getCommandState(cmd)
     );

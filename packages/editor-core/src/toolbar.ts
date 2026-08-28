@@ -1,4 +1,4 @@
-import type { ToolbarItem, EditorCommand, EditorCommandState } from "./types";
+import type { ToolbarItem, EditorCommand, EditorCommandState, EditorLabels } from "./types";
 
 /** Default toolbar icon SVGs */
 const ICONS: Record<string, string> = {
@@ -24,7 +24,7 @@ const ICONS: Record<string, string> = {
 };
 
 /** Default toolbar items configuration */
-export function getDefaultToolbarItems(): ToolbarItem[] {
+export function getDefaultToolbarItems(labels: EditorLabels = {}): ToolbarItem[] {
   return [
     { command: "undo", label: "Undo", icon: ICONS.undo, shortcut: "Ctrl+Z" },
     { command: "redo", label: "Redo", icon: ICONS.redo, shortcut: "Ctrl+Shift+Z" },
@@ -50,7 +50,7 @@ export function getDefaultToolbarItems(): ToolbarItem[] {
     { command: "horizontalRule", label: "Horizontal Rule", icon: ICONS.horizontalRule },
     { command: "divider", label: "", icon: "", divider: true },
     { command: "search", label: "Search and replace", icon: ICONS.search, shortcut: "Ctrl+F" },
-  ];
+  ].map((item) => ({ ...item, label: labels[item.command] ?? item.label }));
 }
 
 /** Render toolbar DOM element */
