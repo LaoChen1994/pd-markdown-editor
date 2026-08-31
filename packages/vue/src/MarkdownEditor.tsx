@@ -1,5 +1,5 @@
 import { defineComponent, ref, onMounted, onUnmounted, watch, computed, nextTick, h } from "vue";
-import { MarkdownEditor as CoreEditor } from "pd-editor-core";
+import { enUS, MarkdownEditor as CoreEditor } from "pd-editor-core";
 import {
   copyHtml as copyHtmlToClipboard,
   copyMarkdown as copyMarkdownToClipboard,
@@ -7,8 +7,9 @@ import {
 } from "pd-editor-core";
 import { createParser } from "pd-markdown/parser";
 import katex from "katex";
-import type { EditorLabels, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { EditorLabels, EditorMessages, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 import type { Component, PropType, VNode, VNodeChild } from "vue";
+import type mermaid from "mermaid";
 
 /** Simplified AST node shape (compatible with mdast Root/Content) */
 interface AstNode {
@@ -96,7 +97,7 @@ const renderMath = (value: string, displayMode: boolean): string => {
   }
 };
 
-let mermaidPromise: Promise<any> | null = null;
+let mermaidPromise: Promise<typeof mermaid> | null = null;
 const loadMermaid = () => {
   if (!mermaidPromise) {
     mermaidPromise = import("mermaid").then((m) => {
@@ -116,6 +117,7 @@ export const MermaidRenderer = defineComponent({
   props: {
     value: { type: String, required: true },
     theme: { type: String, default: "light" },
+    messages: { type: Object as PropType<EditorMessages>, default: undefined },
   },
   setup(props) {
     const svgContent = ref("");
@@ -156,15 +158,14 @@ export const MermaidRenderer = defineComponent({
           },
           flowchart: {
             htmlLabels: true,
-            useWidth: true,
             curve: "basis",
           },
         });
         const { svg } = await m.render(id, props.value);
         svgContent.value = svg;
         error.value = null;
-      } catch (err: any) {
-        error.value = err.message || "Failed to render Mermaid diagram";
+      } catch (err: unknown) {
+        error.value = err instanceof Error ? err.message : String(err);
       }
     };
 
@@ -188,7 +189,7 @@ export const MermaidRenderer = defineComponent({
           },
           [
             renderVNode("p", { style: { margin: "0 0 6px 0" } }, [
-              renderVNode("strong", {}, "Mermaid rendering error:"),
+              renderVNode("strong", {}, props.messages?.mermaidRenderingError ?? enUS.mermaidRenderingError),
             ]),
             renderVNode("pre", { style: { whiteSpace: "pre-wrap", margin: "0" } }, error.value),
           ]
@@ -202,7 +203,7 @@ export const MermaidRenderer = defineComponent({
             class: "mermaid-loading",
             style: { padding: "12px", fontStyle: "italic", opacity: 0.7 },
           },
-          "Rendering diagram..."
+          props.messages?.mermaidRendering ?? enUS.mermaidRendering
         );
       }
 
@@ -421,7 +422,7 @@ export function renderAstNode(
   if (node.type === "code") {
     if (node.lang?.toLowerCase() === "mermaid") {
       const theme = componentMap["_theme"] as string || "light";
-      return renderVNode(MermaidRenderer, { key, value: node.value ?? "", theme });
+      return renderVNode(MermaidRenderer, { key, value: node.value ?? "", theme, messages: componentMap["_messages"] });
     }
 
     const preComp = componentMap["pre"] as Component | undefined;
@@ -499,6 +500,7 @@ export const MarkdownEditor = defineComponent({
     preview: { type: String as PropType<"edit" | "preview" | "split">, default: "edit" },
     toolbar: { type: [Boolean, Array] as PropType<boolean | ToolbarItem[]>, default: true },
     labels: { type: Object as PropType<EditorLabels>, default: undefined },
+    messages: { type: Object as PropType<EditorMessages>, default: undefined },
     /** Read during editor initialization. */
     plugins: { type: Array as PropType<EditorPlugin[]>, default: () => [] },
     /** Read during editor initialization. */
@@ -569,6 +571,7 @@ export const MarkdownEditor = defineComponent({
         plugins: props.plugins,
         toolbar: props.toolbar,
         labels: props.labels,
+        messages: props.messages,
       });
 
       editorRef.value = editor;
@@ -655,6 +658,10 @@ export const MarkdownEditor = defineComponent({
       editorRef.value?.setToolbar(toolbar, labels);
     });
 
+    watch(() => props.messages, (messages) => {
+      editorRef.value?.setMessages(messages);
+    });
+
     watch(() => props.preview, async (preview) => {
       if (preview === "preview") {
         updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
@@ -694,6 +701,7 @@ export const MarkdownEditor = defineComponent({
         const componentMapWithTheme = {
           ...mergedComponents.value,
           _theme: props.theme,
+          _messages: props.messages,
         };
         const rendered = renderAstNode(previewAst.value, componentMapWithTheme, "root");
         if (Array.isArray(rendered)) {

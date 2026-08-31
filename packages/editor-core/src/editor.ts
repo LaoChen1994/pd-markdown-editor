@@ -5,6 +5,7 @@ import type {
   EditorCommand,
   EditorCommandState,
   EditorLabels,
+  EditorMessages,
   EditorPlugin,
   MarkdownEditorInstance,
   MarkdownEditorOptions,
@@ -27,6 +28,7 @@ import {
 } from "./commands";
 import { getDefaultToolbarItems, createToolbarElement, updateToolbarElementState } from "./toolbar";
 import { PluginManager } from "./plugins";
+import { mergeEditorMessages } from "./messages";
 
 /**
  * MarkdownEditor — Core editor engine powered by CodeMirror 6
@@ -56,10 +58,12 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   private pluginCompartment = new Compartment();
   private pluginExtensions = new Map<string, Extension[]>();
   private baseToolbarItems: ToolbarItem[] | null;
+  private currentToolbar: boolean | ToolbarItem[];
   private currentTheme: "light" | "dark";
   private currentReadOnly: boolean;
   private currentMaxLength?: number;
   private currentLabels: EditorLabels;
+  private currentMessages: EditorMessages;
   private onChange?: (value: string) => void;
   private updateTimer: ReturnType<typeof setTimeout> | null = null;
   private initialValue: string;
@@ -80,15 +84,18 @@ export class MarkdownEditor implements MarkdownEditorInstance {
       plugins = [],
       toolbar = true,
       labels = {},
+      messages = {},
     } = options;
 
     this.currentTheme = theme;
     this.currentReadOnly = readOnly;
     this.currentMaxLength = maxLength === undefined ? undefined : Math.max(0, maxLength);
     this.currentLabels = labels;
+    this.currentMessages = mergeEditorMessages(messages);
+    this.currentToolbar = toolbar;
     this.onChange = onChange;
     this.initialValue = this.currentMaxLength === undefined ? initialValue : initialValue.slice(0, this.currentMaxLength);
-    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems(labels) : toolbar;
+    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems({ ...this.currentMessages, ...labels }) : toolbar;
 
     // Plugin manager
     this.pluginManager = new PluginManager();
@@ -249,14 +256,29 @@ export class MarkdownEditor implements MarkdownEditorInstance {
   }
 
   setToolbar(toolbar: boolean | ToolbarItem[], labels: EditorLabels = this.currentLabels): void {
+    this.currentToolbar = toolbar;
     this.currentLabels = labels;
-    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems(labels) : toolbar;
+    this.baseToolbarItems = toolbar === false ? null : toolbar === true ? getDefaultToolbarItems({ ...this.currentMessages, ...labels }) : toolbar;
     if (!this.baseToolbarItems) {
       this.toolbarEl?.remove();
       this.toolbarEl = null;
       return;
     }
     this.refreshToolbar();
+  }
+
+  setMessages(messages: EditorMessages = {}): void {
+    this.currentMessages = mergeEditorMessages(messages);
+    this.setToolbar(this.currentToolbar, this.currentLabels);
+    this.pluginManager.notifyUpdate(this.getValue(), this);
+  }
+
+  getMessage(key: string, params: Record<string, string | number> = {}): string {
+    let message = this.currentMessages[key] ?? key;
+    for (const [name, value] of Object.entries(params)) {
+      message = message.replaceAll(`{${name}}`, String(value));
+    }
+    return message;
   }
 
   replaceSelection(text: string): void {

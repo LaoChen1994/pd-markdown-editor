@@ -9,6 +9,8 @@
 
 An embeddable Markdown editor SDK for **technical content, AI writing tools, and CMS workflows**. Build with React, Vue 3, or the framework-agnostic CodeMirror 6 core while keeping content portable Markdown.
 
+[中文说明](./README.zh-CN.md)
+
 [Try the live demo](https://laochen1994.github.io/pd-markdown-editor/) · [React on npm](https://www.npmjs.com/package/pd-editor-react) · [Vue on npm](https://www.npmjs.com/package/pd-editor-vue) · [Star on GitHub](https://github.com/LaoChen1994/pd-markdown-editor)
 
 ![pd-markdown-editor live React demo](./docs/demo.webp)
@@ -141,6 +143,28 @@ const editor = new MarkdownEditor({
 });
 ```
 
+### Internationalization
+
+The default locale is English. Pass the built-in Chinese catalog to React, Vue, or Core; changing `messages` after mount updates the toolbar, TOC, lint diagnostics, upload placeholders, and Mermaid status text.
+
+```tsx
+import { MarkdownEditor, zhCN } from "pd-editor-react";
+
+<MarkdownEditor messages={zhCN} preview="split" />;
+```
+
+Create a product-specific locale by overriding only the messages you need:
+
+```ts
+import { enUS } from "pd-editor-core";
+
+const messages = {
+  ...enUS,
+  tableOfContents: "Contents",
+  "image-upload": "Add image",
+};
+```
+
 ---
 
 ## 🧩 Plugin System
@@ -231,10 +255,10 @@ editor.getCommandState('heading2'); // { active, enabled }
 
 The next high-impact items are intentionally product-facing:
 
-- Built-in lint panel for the Vue demo.
-- Upload progress and failure UI for image uploads.
-- Copy/export actions for Markdown and rendered HTML.
-- More recipes for Next.js, Vite, Nuxt, and CMS integrations.
+- Optional collaboration adapter without coupling the core to one provider.
+- A slash-command palette for faster block insertion.
+- More integration recipes for Next.js, Nuxt, and CMS products.
+- Accessibility and mobile regression coverage for every release.
 
 If this matches your use case, a GitHub star helps prioritize the next release.
 
@@ -280,6 +304,8 @@ pnpm changeset
 pnpm version-packages
 pnpm release
 ```
+
+Maintainers should configure npm trusted publishing before the first automated release. See [the release guide](./docs/releasing.md).
 
 Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the local workflow and pull request checklist.
 

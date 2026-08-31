@@ -5,6 +5,8 @@ import { frontmatterPlugin, parseFrontmatter } from "./frontmatter";
 import { lintMarkdown, markdownLintPlugin } from "./markdown-lint";
 import { extractMathExpressions, mathPlugin } from "./math";
 import { createMermaidElement, extractMermaidDiagrams, mermaidPlugin } from "./mermaid";
+import { MarkdownEditor } from "../editor";
+import { zhCN } from "../messages";
 
 const createEditor = (value: string): MarkdownEditorInstance => ({
   getValue: () => value,
@@ -153,6 +155,14 @@ describe("content plugins", () => {
     expect(diagnostics.map((diagnostic) => diagnostic.rule)).toEqual(["empty-link"]);
   });
 
+  it("detects duplicate non-Latin heading ids", () => {
+    const diagnostics = lintMarkdown("# 标题\n\n# 标题");
+
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ rule: "duplicate-heading-id", data: { headingId: "标题" } }),
+    ]);
+  });
+
   it("notifies markdown lint diagnostics through the editor plugin lifecycle", () => {
     const counts: number[] = [];
     const plugin = markdownLintPlugin({
@@ -166,5 +176,23 @@ describe("content plugins", () => {
     plugin.onUpdate?.({ value: "[]()", editor: createEditor("[]()") });
 
     expect(counts).toEqual([0, 1]);
+  });
+
+  it("localizes markdown lint diagnostics through editor messages", () => {
+    const parent = document.createElement("div");
+    let messages: string[] = [];
+    const editor = new MarkdownEditor({
+      parent,
+      initialValue: "# Same\n\n# Same\n\n![](image.png)",
+      messages: zhCN,
+      toolbar: false,
+      plugins: [markdownLintPlugin({ onDiagnostics: (diagnostics) => { messages = diagnostics.map(({ message }) => message); } })],
+    });
+
+    expect(messages).toEqual([
+      zhCN.lintImageAlt,
+      zhCN.lintDuplicateHeadingId.replace("{id}", "same"),
+    ]);
+    editor.destroy();
   });
 });

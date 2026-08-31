@@ -1,4 +1,3 @@
-import "pd-markdown-ui/styles.css";
-import "katex/dist/katex.min.css";
+import "./styles.css";
 
 export * from "./headless";

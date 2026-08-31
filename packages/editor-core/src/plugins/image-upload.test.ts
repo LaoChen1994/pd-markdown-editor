@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MarkdownEditor } from "../editor";
 import { imageUploadPlugin } from "./image-upload";
+import { zhCN } from "../messages";
 
 const dispatchDrop = (editor: MarkdownEditor, files: File[]): void => {
   const event = new Event("drop", { bubbles: true, cancelable: true });
@@ -42,6 +43,18 @@ describe("imageUploadPlugin", () => {
     expect(editor.getValue()).toBe("![picked.png](https://cdn.example.com/picked.png)");
     editor.destroy();
     expect(document.body.contains(input)).toBe(false);
+  });
+
+  it("keeps an explicit upload button label", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      messages: zhCN,
+      plugins: [imageUploadPlugin({ label: "Add asset", handler: async () => "https://cdn.example.com/file.png" })],
+    });
+
+    expect(parent.querySelector<HTMLButtonElement>('[data-command="image-upload"]')?.ariaLabel).toBe("Add asset");
+    editor.destroy();
   });
 
   it("replaces only the matching placeholder for concurrent files with the same name", async () => {
@@ -139,6 +152,22 @@ describe("imageUploadPlugin", () => {
     expect(errors).toEqual([error]);
     expect(editor.getValue()).toBe("![Upload failed: broken.png](pd-editor-upload-1)");
 
+    editor.destroy();
+  });
+
+  it("uses editor messages for upload labels and markers", async () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({
+      parent,
+      messages: zhCN,
+      plugins: [imageUploadPlugin({ handler: async () => { throw new Error("失败"); } })],
+    });
+
+    expect(parent.querySelector<HTMLButtonElement>('[data-command="image-upload"]')?.ariaLabel).toBe("上传图片");
+    dispatchDrop(editor, [new File(["content"], "broken.png", { type: "image/png" })]);
+    await flushPromises();
+
+    expect(editor.getValue()).toBe("![上传失败：broken.png](pd-editor-upload-1)");
     editor.destroy();
   });
 

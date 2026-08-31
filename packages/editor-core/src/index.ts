@@ -6,6 +6,8 @@ export type {
   EditorCommand,
   EditorCommandState,
   EditorLabels,
+  EditorMessageKey,
+  EditorMessages,
   ToolbarItem,
   EditorPlugin,
   ToolbarContext,
@@ -14,6 +16,8 @@ export type {
   MarkdownCodeLanguages,
   Extension,
 } from "./types";
+
+export { enUS, zhCN } from "./messages";
 
 // Commands
 export {

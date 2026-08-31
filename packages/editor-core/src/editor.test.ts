@@ -3,6 +3,7 @@ import { EditorState } from "@codemirror/state";
 import { EditorView, runScopeHandlers } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { MarkdownEditor } from "./editor";
+import { zhCN } from "./messages";
 import type { EditorPlugin } from "./types";
 
 function waitForUpdate(): Promise<void> {
@@ -10,6 +11,23 @@ function waitForUpdate(): Promise<void> {
 }
 
 describe("MarkdownEditor", () => {
+  it("applies and updates built-in messages without recreating the editor", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({ parent });
+    const view = editor.getEditorView();
+
+    expect(parent.querySelector<HTMLButtonElement>('[data-command="bold"]')?.ariaLabel).toBe("Bold");
+    expect(editor.getMessage("uploadingImage", { file: "photo.png" })).toBe("Uploading photo.png...");
+
+    editor.setMessages(zhCN);
+
+    expect(editor.getEditorView()).toBe(view);
+    expect(parent.querySelector<HTMLButtonElement>('[data-command="bold"]')?.ariaLabel).toBe("加粗");
+    expect(editor.getMessage("uploadingImage", { file: "photo.png" })).toBe("正在上传 photo.png...");
+
+    editor.destroy();
+  });
+
   it("keeps callbacks and plugins after theme changes", async () => {
     const parent = document.createElement("div");
     const updates: string[] = [];

@@ -104,6 +104,7 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 | `preview` | `"edit" \| "preview" \| "split"` | `"edit"` | View mode |
 | `toolbar` | `boolean \| ToolbarItem[]` | `true` | Built-in toolbar, hidden toolbar, or custom items |
 | `labels` | `EditorLabels` | - | Toolbar labels keyed by command |
+| `messages` | `EditorMessages` | `enUS` | Built-in UI and plugin messages; supports runtime updates |
 | `plugins` | `EditorPlugin[]` | `[]` | Core plugins |
 | `extensions` | `Extension[]` | `[]` | CodeMirror 6 extensions |
 | `codeLanguages` | `MarkdownCodeLanguages` | - | Optional fenced code language resolver for the editor |
@@ -111,7 +112,13 @@ Fenced code previews render lightweight semantic `<pre><code>` markup by default
 | `className` | `string` | `""` | Outer container class |
 | `style` | `React.CSSProperties` | `{}` | Outer container style |
 
-`value`, `theme`, `readOnly`, `maxLength`, `preview`, `toolbar`, and `labels` update after mount. `placeholder`, `plugins`, `extensions`, and `codeLanguages` are initialization options.
+`value`, `theme`, `readOnly`, `maxLength`, `preview`, `toolbar`, `labels`, and `messages` update after mount. `placeholder`, `plugins`, `extensions`, and `codeLanguages` are initialization options.
+
+```tsx
+import { MarkdownEditor, zhCN } from "pd-editor-react";
+
+<MarkdownEditor messages={zhCN} />;
+```
 
 ## Ref And Export Actions
 

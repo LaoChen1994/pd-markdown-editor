@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { tocPlugin } from "./toc";
 import type { MarkdownEditorInstance } from "../types";
 import { MarkdownEditor } from "../editor";
+import { zhCN } from "../messages";
 
 function createEditor(value: string): MarkdownEditorInstance {
   return {
@@ -32,10 +33,21 @@ describe("tocPlugin", () => {
     });
 
     const toc = parent.querySelector(".pd-editor-content > .pd-editor-toc");
+    expect(toc?.firstElementChild?.textContent).toBe("Table of Contents");
     expect(toc?.querySelector("a")?.textContent).toBe("First");
 
     editor.destroy();
     expect(parent.querySelector(".pd-editor-toc")).toBeNull();
+  });
+
+  it("updates the TOC title when editor messages change", () => {
+    const parent = document.createElement("div");
+    const editor = new MarkdownEditor({ parent, initialValue: "# 标题", plugins: [tocPlugin()] });
+
+    editor.setMessages(zhCN);
+
+    expect(parent.querySelector(".pd-editor-toc")?.firstElementChild?.textContent).toBe("目录");
+    editor.destroy();
   });
 
   it("uses parser-generated unique heading ids", () => {

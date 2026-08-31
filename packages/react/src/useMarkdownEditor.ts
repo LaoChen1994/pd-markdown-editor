@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
 import { copyMarkdown, downloadMarkdown, MarkdownEditor } from "pd-editor-core";
-import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { MarkdownEditorOptions, EditorCommand, EditorLabels, EditorMessages, EditorPlugin, Extension, MarkdownCodeLanguages } from "pd-editor-core";
 
 export interface UseMarkdownEditorOptions {
   initialValue?: string;
@@ -15,6 +15,7 @@ export interface UseMarkdownEditorOptions {
   plugins?: EditorPlugin[];
   toolbar?: boolean | MarkdownEditorOptions["toolbar"];
   labels?: EditorLabels;
+  messages?: EditorMessages;
 }
 
 export interface UseMarkdownEditorReturn {
@@ -69,6 +70,7 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
       plugins: options.plugins,
       toolbar: options.toolbar,
       labels: options.labels,
+      messages: options.messages,
     });
 
     editorRef.current = editor;
@@ -96,6 +98,10 @@ export function useMarkdownEditor(options: UseMarkdownEditorOptions = {}): UseMa
   useEffect(() => {
     editorRef.current?.setToolbar(options.toolbar ?? true, options.labels);
   }, [options.toolbar, options.labels]);
+
+  useEffect(() => {
+    editorRef.current?.setMessages(options.messages);
+  }, [options.messages]);
 
   const getValue = useCallback(() => editorRef.current?.getValue() ?? "", []);
   const setValue = useCallback((v: string) => editorRef.current?.setValue(v), []);

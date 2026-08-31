@@ -1,6 +1,6 @@
 import { defineConfig } from "tsup";
 
-const external = ["vue", "pd-editor-core", "pd-markdown", "pd-markdown/parser", "pd-markdown-ui", "pd-markdown-ui/vue", "pd-shad-ui", "pd-shad-ui/styles.css", "katex/dist/katex.min.css"];
+const external = ["vue", "pd-editor-core", "pd-markdown", "pd-markdown/parser", "pd-markdown-ui", "pd-markdown-ui/vue", "pd-shad-ui", "pd-shad-ui/styles.css", "katex/dist/katex.min.css", "./styles.css"];
 
 export default defineConfig([
   {

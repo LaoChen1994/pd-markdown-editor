@@ -3,13 +3,15 @@ import {
   copyHtml as copyHtmlToClipboard,
   copyMarkdown as copyMarkdownToClipboard,
   downloadMarkdown as downloadMarkdownFile,
+  enUS,
   MarkdownEditor as CoreEditor,
 } from "pd-editor-core";
 import { MarkdownRenderer } from "pd-markdown/web";
 import katex from "katex";
 
-import type { EditorLabels, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
-import type { ComponentMap } from "pd-markdown/web";
+import type { EditorLabels, EditorMessages, EditorPlugin, ToolbarItem, Extension, MarkdownCodeLanguages } from "pd-editor-core";
+import type { CodeProps, ComponentMap } from "pd-markdown/web";
+import type mermaid from "mermaid";
 
 const styledTag = (tag: React.ElementType, baseClass: string): React.FC<React.HTMLAttributes<HTMLElement>> =>
   ({ className = "", ...props }) => React.createElement(tag, { ...props, className: `${baseClass} ${className}` });
@@ -139,7 +141,7 @@ export const markdownUiComponentMap: Partial<ComponentMap> = {
   blockquote: ({ children }) => React.createElement(markdownUiComponents.blockquote, null, children),
 };
 
-let mermaidPromise: Promise<any> | null = null;
+let mermaidPromise: Promise<typeof mermaid> | null = null;
 const loadMermaid = () => {
   if (!mermaidPromise) {
     mermaidPromise = import("mermaid").then((m) => {
@@ -154,7 +156,7 @@ const loadMermaid = () => {
   return mermaidPromise;
 };
 
-export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark" }> = ({ value, theme }) => {
+export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark"; messages?: EditorMessages }> = ({ value, theme, messages }) => {
   const [svgContent, setSvgContent] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
@@ -197,7 +199,6 @@ export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark"
           },
           flowchart: {
             htmlLabels: true,
-            useWidth: true,
             curve: "basis",
           },
         });
@@ -207,9 +208,9 @@ export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark"
           setSvgContent(svg);
           setError(null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (active) {
-          setError(err.message || "Failed to render Mermaid diagram");
+          setError(err instanceof Error ? err.message : String(err));
         }
       }
     };
@@ -223,14 +224,14 @@ export const MermaidRenderer: React.FC<{ value: string; theme?: "light" | "dark"
   if (error) {
     return (
       <div className="mermaid-error" style={{ color: "#f85149", padding: "12px", border: "1px solid #f85149", borderRadius: "6px", margin: "12px 0", background: "rgba(248, 81, 73, 0.1)" }}>
-        <p style={{ margin: "0 0 6px 0" }}><strong>Mermaid rendering error:</strong></p>
+        <p style={{ margin: "0 0 6px 0" }}><strong>{messages?.mermaidRenderingError ?? enUS.mermaidRenderingError}</strong></p>
         <pre style={{ whiteSpace: "pre-wrap", margin: "0" }}>{error}</pre>
       </div>
     );
   }
 
   if (!svgContent) {
-    return <div className="mermaid-loading" style={{ padding: "12px", fontStyle: "italic", opacity: 0.7 }}>Rendering diagram...</div>;
+    return <div className="mermaid-loading" style={{ padding: "12px", fontStyle: "italic", opacity: 0.7 }}>{messages?.mermaidRendering ?? enUS.mermaidRendering}</div>;
   }
 
   return <div className="pd-rendered-mermaid" dangerouslySetInnerHTML={{ __html: svgContent }} style={{ display: "flex", justifyContent: "center", margin: "16px 0" }} />;
@@ -262,6 +263,8 @@ export interface MarkdownEditorProps {
   toolbar?: boolean | ToolbarItem[];
   /** Toolbar labels keyed by command */
   labels?: EditorLabels;
+  /** Built-in UI and plugin messages. Defaults to en-US. */
+  messages?: EditorMessages;
   /** Editor plugins. Read during editor initialization. */
   plugins?: EditorPlugin[];
   /** Custom CSS class */
@@ -305,6 +308,7 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
   preview = "edit",
   toolbar = true,
   labels,
+  messages,
   plugins = [],
   className = "",
   style = {},
@@ -331,9 +335,9 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
   const mergedComponents = React.useMemo(
     () => ({
       ...markdownUiComponentMap,
-      code: ({ node }: { node: any }) => {
+      code: ({ node }: CodeProps) => {
         if (node.lang?.toLowerCase() === "mermaid") {
-          return <MermaidRenderer value={node.value ?? ""} theme={theme} />;
+          return <MermaidRenderer value={node.value ?? ""} theme={theme} messages={messages} />;
         }
         if (renderComponentMap?.code) {
           return renderComponentMap.code({ node });
@@ -347,7 +351,7 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
       },
       ...renderComponentMap,
     }),
-    [renderComponentMap, theme]
+    [renderComponentMap, theme, messages]
   );
 
   // Initialize editor
@@ -376,6 +380,7 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
       plugins,
       toolbar,
       labels,
+      messages,
     });
 
     editorRef.current = editor;
@@ -403,6 +408,10 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
   useEffect(() => {
     editorRef.current?.setToolbar(toolbar, labels);
   }, [toolbar, labels]);
+
+  useEffect(() => {
+    editorRef.current?.setMessages(messages);
+  }, [messages]);
 
   useImperativeHandle(ref, () => ({
     getValue: () => editorRef.current?.getValue() ?? latestValueRef.current,

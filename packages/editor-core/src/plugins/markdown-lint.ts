@@ -13,6 +13,8 @@ export interface MarkdownDiagnostic {
   message: string;
   severity: "warning" | "error";
   position?: MarkdownPosition;
+  /** Structured details for custom diagnostic presentation. */
+  data?: { headingId?: string };
 }
 
 export interface MarkdownLintPluginOptions {
@@ -29,11 +31,18 @@ const defaultRules: MarkdownLintRule[] = [
   "duplicate-heading-id",
 ];
 
+const lintMessageKeys: Record<MarkdownLintRule, string> = {
+  "image-alt": "lintImageAlt",
+  "empty-link": "lintEmptyLink",
+  "heading-increment": "lintHeadingIncrement",
+  "duplicate-heading-id": "lintDuplicateHeadingId",
+};
+
 const slugifyHeading = (text: string): string =>
   text
     .trim()
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}_\s-]/gu, "")
     .replace(/\s+/g, "-");
 
 const lintImageAlt = (node: MarkdownAstNode, diagnostics: MarkdownDiagnostic[]): void => {
@@ -87,6 +96,7 @@ const lintHeadingRules = (
         message: `Heading id '${id}' is duplicated.`,
         severity: "warning",
         position: node.position,
+        data: { headingId: id },
       });
     }
     headingIds.add(id);
@@ -112,7 +122,13 @@ export const lintMarkdown = (
 
 export const markdownLintPlugin = (options: MarkdownLintPluginOptions = {}): EditorPlugin => {
   const notify = (editor: MarkdownEditorInstance): void => {
-    options.onDiagnostics?.(lintMarkdown(editor.getValue(), options), editor);
+    const diagnostics = lintMarkdown(editor.getValue(), options).map((diagnostic) => ({
+      ...diagnostic,
+      message: editor.getMessage?.(lintMessageKeys[diagnostic.rule], {
+        id: diagnostic.data?.headingId ?? "",
+      }) ?? diagnostic.message,
+    }));
+    options.onDiagnostics?.(diagnostics, editor);
   };
 
   return {
