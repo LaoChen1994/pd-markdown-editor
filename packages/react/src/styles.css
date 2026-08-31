@@ -94,8 +94,16 @@
 }
 
 @media (max-width: 620px) {
+  .pd-editor-react .pd-editor-content {
+    flex-direction: column !important;
+  }
+
   .pd-editor-react .pd-editor-toc {
-    display: none !important;
+    box-sizing: border-box;
+    width: 100% !important;
+    max-height: 160px;
+    border-top: 1px solid var(--pd-editor-border, #d1d9e0);
+    border-left: 0 !important;
   }
 
   .pd-editor-react[data-preview="split"] {

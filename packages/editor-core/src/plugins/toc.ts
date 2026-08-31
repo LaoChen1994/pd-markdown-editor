@@ -72,6 +72,7 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
   const renderToc = (items: TocItem[], titleText: string): void => {
     if (!tocContainer) return;
     tocContainer.replaceChildren();
+    tocContainer.setAttribute("aria-label", titleText);
 
     const title = document.createElement("div");
     title.textContent = titleText;
@@ -118,7 +119,7 @@ export function tocPlugin(options: TocPluginOptions = {}): EditorPlugin {
 
     install(editor) {
       if (!tocContainer) {
-        tocContainer = document.createElement("div");
+        tocContainer = document.createElement("nav");
         tocContainer.className = "pd-editor-toc";
         Object.assign(tocContainer.style, { width: "clamp(120px, 25%, 180px)", flexShrink: "0", padding: "16px", overflow: "auto", borderLeft: "1px solid #d1d9e0" });
         editor.getContentElement?.().appendChild(tocContainer);

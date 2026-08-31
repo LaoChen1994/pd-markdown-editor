@@ -33,6 +33,8 @@ describe("tocPlugin", () => {
     });
 
     const toc = parent.querySelector(".pd-editor-content > .pd-editor-toc");
+    expect(toc?.tagName).toBe("NAV");
+    expect(toc?.getAttribute("aria-label")).toBe("Table of Contents");
     expect(toc?.firstElementChild?.textContent).toBe("Table of Contents");
     expect(toc?.querySelector("a")?.textContent).toBe("First");
 

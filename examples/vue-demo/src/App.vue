@@ -9,6 +9,8 @@ import {
   mathPlugin,
   mermaidPlugin,
   tocPlugin,
+  enUS,
+  zhCN,
 } from "pd-editor-vue";
 import katex from "katex";
 import type {
@@ -61,6 +63,7 @@ $$
 `);
 
 const theme = ref<"light" | "dark">("light");
+const locale = ref<"en-US" | "zh-CN">("en-US");
 const preview = ref<"edit" | "preview" | "split">("split");
 const codeBlocks = ref<CodeBlockInfo[]>([]);
 const diagrams = ref<MermaidDiagram[]>([]);
@@ -89,7 +92,7 @@ const toggleTheme = () => {
 };
 
 const handleSave = (value: string) => {
-  alert("Saved! Length: " + value.length);
+  alert((locale.value === "zh-CN" ? "已保存，字符数：" : "Saved! Length: ") + value.length);
 };
 
 const renderMath = (value: string, displayMode: boolean) => {
@@ -118,7 +121,7 @@ const renderMath = (value: string, displayMode: boolean) => {
     <div :style="{ maxWidth: '1280px', margin: '0 auto' }">
       <div :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '16px' }">
         <h1 :style="{ fontSize: '24px', fontWeight: 700, color: theme === 'dark' ? '#e6edf3' : '#1f2328', margin: 0 }">
-          pd-editor Vue Demo
+          {{ locale === 'zh-CN' ? 'pd-editor Vue 演示' : 'pd-editor Vue Demo' }}
         </h1>
         <div :style="{ display: 'flex', gap: '8px', flexWrap: 'wrap' }">
           <button
@@ -131,7 +134,19 @@ const renderMath = (value: string, displayMode: boolean) => {
               cursor: 'pointer', fontSize: '14px',
             }"
           >
-            {{ theme === 'light' ? 'Dark' : 'Light' }}
+            {{ theme === 'light' ? (locale === 'zh-CN' ? '深色' : 'Dark') : (locale === 'zh-CN' ? '浅色' : 'Light') }}
+          </button>
+          <button
+            @click="locale = locale === 'en-US' ? 'zh-CN' : 'en-US'"
+            :style="{
+              padding: '6px 16px', borderRadius: '6px',
+              border: `1px solid ${theme === 'dark' ? '#30363d' : '#d1d9e0'}`,
+              backgroundColor: theme === 'dark' ? '#21262d' : '#ffffff',
+              color: theme === 'dark' ? '#e6edf3' : '#1f2328',
+              cursor: 'pointer', fontSize: '14px',
+            }"
+          >
+            {{ locale === 'en-US' ? '中文' : 'English' }}
           </button>
           <button
             v-for="mode in (['edit', 'split', 'preview'] as const)"
@@ -145,7 +160,7 @@ const renderMath = (value: string, displayMode: boolean) => {
               cursor: 'pointer', fontSize: '14px', textTransform: 'capitalize',
             }"
           >
-            {{ mode }}
+            {{ locale === 'zh-CN' ? ({ edit: '编辑', split: '分屏', preview: '预览' } as const)[mode] : mode }}
           </button>
         </div>
       </div>
@@ -156,8 +171,9 @@ const renderMath = (value: string, displayMode: boolean) => {
         :preview="preview"
         :height="620"
         :plugins="plugins"
+        :messages="locale === 'zh-CN' ? zhCN : enUS"
         :render-component-map="renderComponentMap"
-        placeholder="Start writing Markdown..."
+        :placeholder="locale === 'zh-CN' ? '开始编写 Markdown...' : 'Start writing Markdown...'"
         @save="handleSave"
       />
 
@@ -178,23 +194,23 @@ const renderMath = (value: string, displayMode: boolean) => {
 
         <section :style="{ border: `1px solid ${theme === 'dark' ? '#30363d' : '#d1d9e0'}`, borderRadius: '8px', padding: '16px', backgroundColor: theme === 'dark' ? '#161b22' : '#ffffff', color: theme === 'dark' ? '#e6edf3' : '#1f2328' }">
           <h2 :style="{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: theme === 'dark' ? '#8b949e' : '#57606a', textTransform: 'uppercase' }">
-            Code Blocks
+            {{ locale === 'zh-CN' ? '代码块' : 'Code Blocks' }}
           </h2>
-          <p :style="{ margin: 0 }">{{ codeBlocks.map((block) => block.language).join(", ") || "None" }}</p>
+          <p :style="{ margin: 0 }">{{ codeBlocks.map((block) => block.language).join(", ") || (locale === 'zh-CN' ? '无' : 'None') }}</p>
         </section>
 
         <section :style="{ border: `1px solid ${theme === 'dark' ? '#30363d' : '#d1d9e0'}`, borderRadius: '8px', padding: '16px', backgroundColor: theme === 'dark' ? '#161b22' : '#ffffff', color: theme === 'dark' ? '#e6edf3' : '#1f2328' }">
           <h2 :style="{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: theme === 'dark' ? '#8b949e' : '#57606a', textTransform: 'uppercase' }">
             Mermaid
           </h2>
-          <p :style="{ margin: 0 }">{{ diagrams.map((diagram) => diagram.id).join(", ") || "None" }}</p>
+          <p :style="{ margin: 0 }">{{ diagrams.map((diagram) => diagram.id).join(", ") || (locale === 'zh-CN' ? '无' : 'None') }}</p>
         </section>
 
         <section :style="{ border: `1px solid ${theme === 'dark' ? '#30363d' : '#d1d9e0'}`, borderRadius: '8px', padding: '16px', backgroundColor: theme === 'dark' ? '#161b22' : '#ffffff', color: theme === 'dark' ? '#e6edf3' : '#1f2328' }">
           <h2 :style="{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: theme === 'dark' ? '#8b949e' : '#57606a', textTransform: 'uppercase' }">
-            Math
+            {{ locale === 'zh-CN' ? '数学公式' : 'Math' }}
           </h2>
-          <p v-if="mathExpressions.length === 0" :style="{ margin: 0 }">None</p>
+          <p v-if="mathExpressions.length === 0" :style="{ margin: 0 }">{{ locale === 'zh-CN' ? '无' : 'None' }}</p>
           <div v-else :style="{ display: 'grid', gap: '10px' }">
             <div v-for="(expression, index) in mathExpressions" :key="`${expression.type}-${index}`">
               <div v-html="renderMath(expression.value, expression.type === 'block')" />
@@ -205,7 +221,7 @@ const renderMath = (value: string, displayMode: boolean) => {
 
         <section :style="{ border: `1px solid ${theme === 'dark' ? '#30363d' : '#d1d9e0'}`, borderRadius: '8px', padding: '16px', backgroundColor: theme === 'dark' ? '#161b22' : '#ffffff', color: theme === 'dark' ? '#e6edf3' : '#1f2328' }">
           <h2 :style="{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: theme === 'dark' ? '#8b949e' : '#57606a', textTransform: 'uppercase' }">
-            Lint Diagnostics
+            {{ locale === 'zh-CN' ? 'Lint 诊断' : 'Lint Diagnostics' }}
           </h2>
           <ul :style="{ margin: 0, paddingLeft: '18px' }">
             <li v-for="(diagnostic, index) in diagnostics" :key="`${diagnostic.rule}-${index}`">
