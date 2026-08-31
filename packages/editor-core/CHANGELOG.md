@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 2.2.0
+
+### Minor Changes
+
+- ee171e4: Add built-in en-US and zh-CN message catalogs, runtime message switching, localized plugin feedback, and mobile TOC behavior.
+
 ## 2.1.0
 
 ### Minor Changes

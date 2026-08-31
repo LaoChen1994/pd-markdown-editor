@@ -1,6 +1,6 @@
 {
   "name": "pd-editor-core",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Framework-agnostic Markdown editor engine for technical content workflows",
   "type": "module",
   "engines": {

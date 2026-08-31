@@ -1,5 +1,16 @@
 # pd-editor-vue
 
+## 2.3.0
+
+### Minor Changes
+
+- ee171e4: Add built-in en-US and zh-CN message catalogs, runtime message switching, localized plugin feedback, and mobile TOC behavior.
+
+### Patch Changes
+
+- Updated dependencies [ee171e4]
+  - pd-editor-core@2.2.0
+
 ## 2.2.0
 
 ### Minor Changes
