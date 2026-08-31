@@ -1,6 +1,6 @@
 {
   "name": "pd-editor-react",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "React Markdown editor for technical content and AI writing workflows",
   "type": "module",
   "engines": {
