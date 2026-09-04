@@ -1,5 +1,12 @@
 # react-demo
 
+## 0.0.16
+
+### Patch Changes
+
+- Updated dependencies [0b7e7be]
+  - pd-editor-react@2.3.2
+
 ## 0.0.15
 
 ### Patch Changes
