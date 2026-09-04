@@ -442,6 +442,7 @@ export const MarkdownEditorComponent = React.forwardRef<MarkdownEditorHandle, Ma
       const source = isControlled ? (value ?? "") : latestValueRef.current;
       const content = editorRef.current?.getValue()
         ?? (maxLength === undefined ? source : source.slice(0, Math.max(0, maxLength)));
+      latestValueRef.current = content;
       setPreviewContent(content);
     }
   }, [preview, value, isControlled, maxLength]);

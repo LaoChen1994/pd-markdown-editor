@@ -534,6 +534,7 @@ export const MarkdownEditor = defineComponent({
     }));
 
     function updatePreview(markdown: string) {
+      latestValue.value = markdown;
       try {
         previewAst.value = parser.parse(markdown) as unknown as AstNode;
       } catch {
@@ -648,8 +649,9 @@ export const MarkdownEditor = defineComponent({
 
     watch(() => props.maxLength, (maxLength) => {
       editorRef.value?.setMaxLength(maxLength);
+      const source = isControlled.value ? (props.modelValue ?? "") : latestValue.value;
       const content = editorRef.value?.getValue()
-        ?? (maxLength === undefined ? latestValue.value : latestValue.value.slice(0, Math.max(0, maxLength)));
+        ?? (maxLength === undefined ? source : source.slice(0, Math.max(0, maxLength)));
       latestValue.value = content;
       if (props.preview !== "edit") updatePreview(content);
     });
