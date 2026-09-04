@@ -1,5 +1,11 @@
 # pd-editor-vue
 
+## 2.3.3
+
+### Patch Changes
+
+- 0b7e7be: Keep preview-only values, character counts, copied Markdown, and downloaded Markdown in sync with controlled content updates and maxLength changes.
+
 ## 2.3.2
 
 ### Patch Changes
