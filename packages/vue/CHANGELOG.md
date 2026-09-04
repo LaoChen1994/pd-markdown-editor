@@ -1,5 +1,11 @@
 # pd-editor-vue
 
+## 2.3.2
+
+### Patch Changes
+
+- da94f0e: Preserve the editor DOM and undo history across preview mode changes. Read the current document when switching modes, respect maxLength, and suspend scroll synchronization outside split mode.
+
 ## 2.3.1
 
 ### Patch Changes
