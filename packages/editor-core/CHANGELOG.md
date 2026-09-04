@@ -1,5 +1,11 @@
 # pd-editor-core
 
+## 2.2.1
+
+### Patch Changes
+
+- 59f9477: Keep the generated table of contents accessible on narrow screens and expose it as labeled navigation.
+
 ## 2.2.0
 
 ### Minor Changes

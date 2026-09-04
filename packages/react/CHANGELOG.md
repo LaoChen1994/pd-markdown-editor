@@ -1,5 +1,13 @@
 # pd-editor-react
 
+## 2.3.1
+
+### Patch Changes
+
+- 59f9477: Keep the generated table of contents accessible on narrow screens and expose it as labeled navigation.
+- Updated dependencies [59f9477]
+  - pd-editor-core@2.2.1
+
 ## 2.3.0
 
 ### Minor Changes
