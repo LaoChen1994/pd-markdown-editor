@@ -292,6 +292,82 @@ describe("React markdown UI adapter", () => {
     container.remove();
   });
 
+  it.each([true, false])("keeps preview-only exports in sync (controlled: %s)", async (controlled) => {
+    const container = document.createElement("div");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const createObjectURL = vi.fn<(blob: Blob) => string>(() => "blob:preview");
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
+    Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: vi.fn() });
+    const root = createRoot(container);
+    const actions = createRef<MarkdownEditorHandle>();
+    document.body.appendChild(container);
+    const onUpdate = vi.fn();
+    try {
+      for (const [value, maxLength, expected] of [
+        ["first content", 5, "first"],
+        ["second content", 5, controlled ? "secon" : "first"],
+        ["second content", 3, controlled ? "sec" : "fir"],
+        ["second content", undefined, controlled ? "second content" : "fir"],
+        ["", undefined, controlled ? "" : "fir"],
+        ["last content", 0, ""],
+        ["tail content", 4, controlled ? "tail" : ""],
+      ] as const) {
+        await act(async () => {
+          root.render(
+            <MarkdownEditorComponent
+              ref={actions}
+              value={controlled ? value : undefined}
+              defaultValue={value}
+              maxLength={maxLength}
+              preview="preview"
+              onChange={onUpdate}
+            />
+          );
+        });
+        expect(container.querySelector(".cm-editor")).toBeNull();
+        expect(container.querySelector(".pd-md-preview")?.textContent).toBe(expected);
+        expect(actions.current?.getValue()).toBe(expected);
+        expect(actions.current?.getCharacterCount()).toBe(expected.length);
+        await actions.current?.copyMarkdown();
+        expect(writeText).toHaveBeenLastCalledWith(expected);
+        actions.current?.downloadMarkdown("preview.md");
+        const blob = createObjectURL.mock.calls.at(-1)?.[0];
+        if (!blob) throw new Error("Expected a Markdown download.");
+        expect(blob.type).toBe("text/markdown;charset=utf-8");
+        const downloaded = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsText(blob);
+        });
+        expect(downloaded).toBe(expected);
+      }
+      expect(onUpdate).not.toHaveBeenCalled();
+      await act(async () => {
+        root.render(
+          <MarkdownEditorComponent
+            ref={actions}
+            value={controlled ? "tail content" : undefined}
+            defaultValue="ignored"
+            maxLength={4}
+            preview="split"
+          />
+        );
+      });
+      await vi.waitFor(() => {
+        expect(container.querySelector(".cm-editor")).not.toBeNull();
+        expect(actions.current?.getValue()).toBe(controlled ? "tail" : "");
+        expect(container.querySelector(".pd-md-preview")?.textContent).toBe(controlled ? "tail" : "");
+      });
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+      click.mockRestore();
+    }
+  });
+
   it("updates maxLength and labels and exposes export actions", async () => {
     const container = document.createElement("div");
     const root = createRoot(container);

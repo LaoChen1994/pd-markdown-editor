@@ -4,6 +4,7 @@ import { renderToString } from "@vue/server-renderer";
 import { createParser } from "pd-markdown/parser";
 import { MarkdownEditor, markdownUiComponents, renderAstNode } from "./MarkdownEditor";
 import type { MarkdownEditorInstance } from "pd-editor-core";
+import type { MarkdownEditorHandle } from "./MarkdownEditor";
 
 describe("Vue markdown UI renderer", () => {
   it("preserves table header, alignment, heading id, and task item semantics", async () => {
@@ -265,6 +266,78 @@ describe("Vue markdown UI renderer", () => {
 
     app.unmount();
     container.remove();
+  });
+
+  it.each([true, false])("keeps preview-only exports in sync (controlled: %s)", async (controlled) => {
+    const container = document.createElement("div");
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    const createObjectURL = vi.fn<(blob: Blob) => string>(() => "blob:preview");
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
+    Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: vi.fn() });
+    const actions = ref<MarkdownEditorHandle | null>(null);
+    const model = ref("first content");
+    const limit = ref<number | undefined>(5);
+    const preview = ref<"preview" | "split">("preview");
+    const onUpdate = vi.fn();
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        ref: actions,
+        modelValue: controlled ? model.value : undefined,
+        defaultValue: model.value,
+        maxLength: limit.value,
+        preview: preview.value,
+        "onUpdate:modelValue": onUpdate,
+      }),
+    });
+    document.body.appendChild(container);
+    app.mount(container);
+    try {
+      for (const [value, maxLength, expected] of [
+        ["first content", 5, "first"],
+        ["second content", 5, controlled ? "secon" : "first"],
+        ["second content", 3, controlled ? "sec" : "fir"],
+        ["second content", undefined, controlled ? "second content" : "fir"],
+        ["", undefined, controlled ? "" : "fir"],
+        ["last content", 0, ""],
+        ["tail content", 4, controlled ? "tail" : ""],
+      ] as const) {
+        model.value = value;
+        limit.value = maxLength;
+        await nextTick();
+        expect(container.querySelector(".cm-editor")).toBeNull();
+        expect(container.querySelector(".pd-md-preview")?.textContent).toBe(expected);
+        expect(actions.value?.getValue()).toBe(expected);
+        expect(actions.value?.getCharacterCount()).toBe(expected.length);
+        await actions.value?.copyMarkdown();
+        expect(writeText).toHaveBeenLastCalledWith(expected);
+        actions.value?.downloadMarkdown("preview.md");
+        const blob = createObjectURL.mock.calls.at(-1)?.[0];
+        if (!blob) throw new Error("Expected a Markdown download.");
+        expect(blob.type).toBe("text/markdown;charset=utf-8");
+        const downloaded = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsText(blob);
+        });
+        expect(downloaded).toBe(expected);
+      }
+      expect(onUpdate).not.toHaveBeenCalled();
+      preview.value = "split";
+      await nextTick();
+      await nextTick();
+      await vi.waitFor(() => {
+        expect(container.querySelector(".cm-editor")).not.toBeNull();
+        expect(actions.value?.getValue()).toBe(controlled ? "tail" : "");
+        expect(container.querySelector(".pd-md-preview")?.textContent).toBe(controlled ? "tail" : "");
+      });
+    } finally {
+      app.unmount();
+      container.remove();
+      click.mockRestore();
+    }
   });
 
   it("updates maxLength and labels and exposes export actions", async () => {
