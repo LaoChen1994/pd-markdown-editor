@@ -142,13 +142,20 @@ describe("Vue markdown UI renderer", () => {
     await nextTick();
 
     capturedEditors[0].setValue("changed");
+    const editorNode = container.querySelector(".cm-editor");
     preview.value = "preview";
     await nextTick();
+    await nextTick();
+    expect(container.querySelector(".cm-editor")).toBe(editorNode);
+    await vi.waitFor(() => {
+      expect(container.querySelector(".pd-md-preview")?.textContent).toBe("changed");
+    });
     preview.value = "split";
+    await nextTick();
     await nextTick();
 
     expect(capturedEditors).toHaveLength(1);
-    expect(container.querySelector(".cm-editor")).not.toBeNull();
+    expect(container.querySelector(".cm-editor")).toBe(editorNode);
 
     capturedEditors[0].executeCommand("undo");
     expect(capturedEditors[0].getValue()).toBe("first");
@@ -157,12 +164,42 @@ describe("Vue markdown UI renderer", () => {
     container.remove();
   });
 
+  it("keeps maxLength applied when switching preview modes", async () => {
+    const container = document.createElement("div");
+    const preview = ref<"edit" | "preview" | "split">("preview");
+    const app = createApp({
+      setup: () => () => h(MarkdownEditor, {
+        modelValue: "# Hello",
+        maxLength: 3,
+        preview: preview.value,
+      }),
+    });
+    document.body.appendChild(container);
+    app.mount(container);
+    try {
+      for (const mode of ["preview", "edit", "split", "preview"] as const) {
+        preview.value = mode;
+        await nextTick();
+        await nextTick();
+        if (mode === "edit") {
+          expect(container.querySelector(".cm-content")?.textContent).toBe("# H");
+        } else {
+          expect(container.querySelector(".pd-md-preview")?.textContent).toBe("H");
+        }
+      }
+    } finally {
+      app.unmount();
+      container.remove();
+    }
+  });
+
   it("syncs split preview scroll with the editor", async () => {
     const container = document.createElement("div");
+    const preview = ref<"preview" | "split">("split");
     const app = createApp({
       setup: () => () => h(MarkdownEditor, {
         defaultValue: "# Title\n\n".repeat(80),
-        preview: "split",
+        preview: preview.value,
       }),
     });
 
@@ -192,6 +229,20 @@ describe("Vue markdown UI renderer", () => {
     editorScroller.dispatchEvent(new Event("scroll"));
 
     expect(previewPane.scrollTop).toBe(200);
+
+    preview.value = "preview";
+    await nextTick();
+    await nextTick();
+    previewPane.scrollTop = 100;
+    previewPane.dispatchEvent(new Event("scroll"));
+    expect(editorScroller.scrollTop).toBe(400);
+
+    preview.value = "split";
+    await nextTick();
+    await nextTick();
+    previewPane.scrollTop = 100;
+    previewPane.dispatchEvent(new Event("scroll"));
+    expect(editorScroller.scrollTop).toBe(200);
 
     app.unmount();
     container.remove();

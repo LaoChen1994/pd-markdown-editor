@@ -1,5 +1,34 @@
 import { expect, test } from "@playwright/test";
 
+for (const [adapter, url] of [
+  ["React", "http://127.0.0.1:4173/pd-markdown-editor/"],
+  ["Vue", "http://127.0.0.1:4174/"],
+]) {
+  test(`${adapter} preserves an editable draft across mode switches`, async ({ page }) => {
+    await page.goto(url);
+    const input = page.getByRole("textbox");
+    await input.fill("# Kept draft");
+    await expect(page.locator(".pd-md-preview h1")).toHaveText("Kept draft");
+
+    for (let cycle = 0; cycle < 2; cycle += 1) {
+      await page.getByRole("button", { name: "preview", exact: true }).click();
+      await expect(input).not.toBeVisible();
+      await expect(page.locator(".pd-md-preview h1")).toHaveText("Kept draft");
+      await page.getByRole("button", { name: "edit", exact: true }).click();
+      await expect(input).toBeVisible();
+      await expect(input).toHaveText("# Kept draft");
+      await page.getByRole("button", { name: "split", exact: true }).click();
+      await expect(page.locator(".pd-md-preview h1")).toHaveText("Kept draft");
+    }
+
+    await input.fill("# Still editable");
+    await expect(page.locator(".pd-md-preview h1")).toHaveText("Still editable");
+    await expect(page.locator(".cm-editor")).toHaveCount(1);
+    await expect(page.locator('input[type="file"]')).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeEnabled();
+  });
+}
+
 test("React demo supports document actions and localization", async ({ context, page }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("http://127.0.0.1:4173/pd-markdown-editor/");

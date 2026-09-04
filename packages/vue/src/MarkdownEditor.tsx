@@ -663,15 +663,13 @@ export const MarkdownEditor = defineComponent({
     });
 
     watch(() => props.preview, async (preview) => {
-      if (preview === "preview") {
-        updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
-        return;
-      }
       await nextTick();
       mountEditor();
       mountScrollSync();
-      if (preview === "split") {
-        updatePreview(isControlled.value ? (props.modelValue ?? "") : latestValue.value);
+      if (preview !== "edit") {
+        const content = editorRef.value?.getValue()
+          ?? (isControlled.value ? (props.modelValue ?? "") : latestValue.value);
+        updatePreview(props.maxLength === undefined ? content : content.slice(0, Math.max(0, props.maxLength)));
       }
     });
 
@@ -724,18 +722,16 @@ export const MarkdownEditor = defineComponent({
             backgroundColor: isDark ? "#0d1117" : "#ffffff",
           }}
         >
-          {props.preview !== "preview" ? (
-            <Div
-              ref={editorContainerRef}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            />
-          ) : null}
+          <Div
+            ref={editorContainerRef}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              overflow: "hidden",
+              display: props.preview === "preview" ? "none" : "flex",
+              flexDirection: "column",
+            }}
+          />
           {props.preview === "split" || props.preview === "preview" ? (
             <Div
               ref={previewRef}
